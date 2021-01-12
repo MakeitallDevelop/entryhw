@@ -25,6 +25,7 @@ function Module() {
         NEOPIXEL: 22,
         NEOPIXELALL: 23,
         NEOPIXELCLEAR: 24,
+    
     };
 
     this.actionTypes = {
