@@ -20,11 +20,7 @@ function Module() {
         DHTINIT: 17,
         DHTHUMI: 18,
         DHTTEMP: 19,
-        NEOPIXELINIT: 20,
-        NEOPIXELBRIGHT: 21,
-        NEOPIXEL: 22,
-        NEOPIXELALL: 23,
-        NEOPIXELCLEAR: 24,
+        NEOPIXEL: 20,
     };
 
     this.actionTypes = {
@@ -44,6 +40,8 @@ function Module() {
 
     this.sensorData = {
         ULTRASONIC: 0,
+        DHTTEMP: 0,
+        DHTHUMI: 0,
         DIGITAL: {
             0: 0,
             1: 0,
@@ -293,6 +291,18 @@ Module.prototype.handleLocalData = function (data) {
                 self.sensorData.ULTRASONIC = value;
                 break;
             }
+            case self.sensorTypes.DHTTEMP: {
+                self.sensorData.DHTTEMP = value;
+                //console.log('TEMP');
+                // console.log(value);
+                break;
+            }
+            case self.sensorTypes.DHTHUMI: {
+                self.sensorData.DHTHUMI = value;
+                // console.log('HUMI');
+                // console.log(value);
+                break;
+            }
             case self.sensorTypes.TIMER: {
                 self.sensorData.TIMER = value;
                 break;
@@ -328,6 +338,12 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
             port[1],
             10,
         ]);
+    } else if (device == this.sensorTypes.DHTTEMP) {
+        buffer = new Buffer([255, 85, 5, sensorIdx, this.actionTypes.GET, device, port, 10]);
+        //console.log(buffer);
+    } else if (device == this.sensorTypes.DHTHUMI) {
+        buffer = new Buffer([255, 85, 5, sensorIdx, this.actionTypes.GET, device, port, 10]);
+        // console.log(buffer);
     } else if (device == this.sensorTypes.READ_BLUETOOTH) {
         buffer = new Buffer([255, 85, 5, sensorIdx, this.actionTypes.GET, device, port, 10]);
     } else if (!data) {
@@ -420,60 +436,14 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         case this.sensorTypes.WRITE_BLUETOOTH: {
             break;
         }
-        case this.sensorTypes.NEOPIXELINIT: {
-            value.writeInt16LE(data);
-            buffer = new Buffer([255, 85, 6, sensorIdx, this.actionTypes.SET, device, port]);
-            buffer = Buffer.concat([buffer, value, dummy]);
-            break;
-        }
-        case this.sensorTypes.NEOPIXELBRIGHT: {
-            value.writeInt16LE(data);
-            buffer = new Buffer([255, 85, 6, sensorIdx, this.actionTypes.SET, device, port]);
-            buffer = Buffer.concat([buffer, value, dummy]);
-            break;
-        }
-        case this.sensorTypes.NEOPIXEL: {
-            const num = new Buffer(2);
-            const r = new Buffer(2);
-            const g = new Buffer(2);
-            const b = new Buffer(2);
-            if ($.isPlainObject(data)) {
-                num.writeInt16LE(data.num);
-                r.writeInt16LE(data.r);
-                g.writeInt16LE(data.g);
-                b.writeInt16LE(data.b);
-            } else {
-                num.writeInt16LE(0);
-                r.writeInt16LE(0);
-                g.writeInt16LE(0);
-                b.writeInt16LE(0);
-            }
-            buffer = new Buffer([255, 85, 12, sensorIdx, this.actionTypes.SET, device, port]);
-            buffer = Buffer.concat([buffer, num, r, g, b, dummy]);
-            break;
-        }
-        case this.sensorTypes.NEOPIXELALL: {
-            const r = new Buffer(2);
-            const g = new Buffer(2);
-            const b = new Buffer(2);
-            if ($.isPlainObject(data)) {
-                r.writeInt16LE(data.r);
-                g.writeInt16LE(data.g);
-                b.writeInt16LE(data.b);
-            } else {
-                r.writeInt16LE(0);
-                g.writeInt16LE(0);
-                b.writeInt16LE(0);
-            }
-            buffer = new Buffer([255, 85, 10, sensorIdx, this.actionTypes.SET, device, port]);
-            buffer = Buffer.concat([buffer, r, g, b, dummy]);
-            break;
-        }
-        case this.sensorTypes.NEOPIXELCLEAR: {
-            buffer = new Buffer([255, 85, 4, sensorIdx, this.actionTypes.SET, device, port]);
-            buffer = Buffer.concat([buffer, dummy]);
-            break;
-        }
+        // case this.sensorTypes.DHTINIT: {
+        //     value.writeInt16LE(data);
+
+        //     buffer = new Buffer([255, 85, 6, sensorIdx, this.actionTypes.SET, device, port]);
+        //     buffer = Buffer.concat([buffer, value, dummy]);
+        //     //console.log(buffer);
+        //     break;
+        // }
         case this.sensorTypes.LCDCLEAR: {
             buffer = new Buffer([255, 85, 4, sensorIdx, this.actionTypes.MODUEL, device, port]);
             buffer = Buffer.concat([buffer, dummy]);

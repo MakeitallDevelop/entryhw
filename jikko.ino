@@ -10,11 +10,11 @@
    Copyright (C) 2013 - 2016 Maker Works Technology Co., Ltd. All right reserved.
  **********************************************************************************/
 
+//#include <DHT.h>
+#include <dht.h>
 #include <Servo.h> //헤더 호출
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
-#include <Adafruit_NeoPixel.h>
-
 //#include "U8glib.h"
 
 // Module Constant //핀설정
@@ -37,11 +37,11 @@
 #define DHTINIT 17
 #define DHTHUMI 18
 #define DHTTEMP 19
-#define NEOPIXELINIT 20
-#define NEOPIXELBRIGHT 21
-#define NEOPIXEL 22
-#define NEOPIXELALL 23
-#define NEOPIXELCLEAR 24
+//#define NEOPIXEL 20
+#define TEMP 20
+#define _HUMID 21
+#define _TEMP_F 22
+#define _TEMP_C 23
 
 // State Constant
 #define GET 1
@@ -51,9 +51,8 @@
 
 Servo servos[8];
 Servo sv;
-
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+dht myDHT11;
 SoftwareSerial softSerial(2, 3);
 //U8GLIB_SSD1306_128X64 oled(U8G_I2C_OPT_NONE);
 
@@ -81,6 +80,8 @@ float lastUltrasonic = 0;
 int trigPin = 13;
 int echoPin = 12;
 
+int dhtPin = 0;
+int dhtMode = 0;
 // bluetooth                //블루투스
 String makeBtString;
 int softSerialRX = 2;
@@ -103,6 +104,9 @@ uint8_t command_index = 0;
 boolean isStart = false;
 boolean isUltrasonic = false;
 boolean isBluetooth = false;
+boolean isDHThumi = false;
+boolean isDHTtemp = false;
+
 // End Public Value
 
 void setup()
@@ -110,7 +114,6 @@ void setup()
     Serial.begin(115200);   //시리얼 115200
     softSerial.begin(9600); //블루투스 9600
     initPorts();
-    initNeo();
     initLCD();
     delay(200);
 }
@@ -122,12 +125,6 @@ void initPorts()
         pinMode(pinNumber, OUTPUT);
         digitalWrite(pinNumber, LOW);
     }
-}
-
-void initNeo()
-{   // 네오픽셀 초기화
-    strip.begin();
-    strip.show();
 }
 
 void initLCD()
@@ -220,7 +217,7 @@ void parseData()
     int action = readBuffer(4);
     int device = readBuffer(5);
     int port = readBuffer(6);
-    
+
     switch (action)
     {
     case GET:
@@ -253,6 +250,23 @@ void parseData()
                     delay(50);
                 }
             }
+        }
+        else if (device == DHTHUMI)
+        {
+            isDHThumi = true;
+            //setDHTTEMPMode(true);
+            dhtPin = readBuffer(6);
+            //myDHT11.read11(dhtPin);
+            digitals[port] = 1;
+        }
+        else if (device == DHTTEMP)
+        {
+            isDHTtemp = true;
+
+            //setDHTHUMIMode(true);
+            dhtPin = readBuffer(6);
+            //  myDHT11.read11(dhtPin);
+            digitals[port] = 1;
         }
         else if (device == READ_BLUETOOTH)
         {
@@ -324,6 +338,7 @@ void runSet(int device)
     {
         setUltrasonicMode(false);
     }
+
     switch (device)
     {
     case DIGITAL:
@@ -355,89 +370,15 @@ void runSet(int device)
         }
     }
     break;
-    case NEOPIXELINIT:
-    {
-        setPortWritable(pin);
-        strip = Adafruit_NeoPixel(readBuffer(7), readBuffer(6), NEO_GRB + NEO_KHZ800);
-        strip.begin();
-        strip.setPixelColor(0, 0, 0, 0);
-        strip.setPixelColor(1, 0, 0, 0);
-        strip.setPixelColor(2, 0, 0, 0);
-        strip.setPixelColor(3, 0, 0, 0);
-        strip.show();
-        //delay(1);
-    }
-    break;
-    case NEOPIXELBRIGHT:
-    {
-        //setPortWritable(pin);
-        int bright = readBuffer(7);
-
-        strip.setBrightness(bright);
-        //delay(10);
-    }
-    break;
-    case NEOPIXEL:
-    {
-        //setPortWritable(pin);
-        //strip.begin();
-        
-        int num = readBuffer(7);
-        int r = readBuffer(9);
-        int g = readBuffer(11);
-        int b = readBuffer(13);
-
-        strip.setPixelColor(num, r, g, b);
-        /*
-        lcd.init();
-        lcd.backlight();
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(r);
-        lcd.setCursor(6, 0);
-        lcd.print(g);
-        lcd.setCursor(12, 0);
-        lcd.print(b);
-        */
-        //delay(50);
-        strip.show();
-        //delay(50);
-    }
-    break;
-    case NEOPIXELALL:
-    {
-        //setPortWritable(pin);
-        //strip.begin();
-        
-        int r = readBuffer(7);
-        int g = readBuffer(9);
-        int b = readBuffer(11);
-        
-        strip.setPixelColor(0, r, g, b);
-        strip.setPixelColor(1, r, g, b);
-        strip.setPixelColor(2, r, g, b);
-        strip.setPixelColor(3, r, g, b);
-        
-        strip.show();
-        //delay(50);
-    }
-    break;
-    case NEOPIXELCLEAR:
-    {
-        setPortWritable(pin);
-        //strip.begin();
-        strip.setPixelColor(0, 0, 0, 0);
-        strip.setPixelColor(1, 0, 0, 0);
-        strip.setPixelColor(2, 0, 0, 0);
-        strip.setPixelColor(3, 0, 0, 0);
-        strip.show();
-        //delay(1);
-    }
-    break;
+    // case DHTINIT:
+    // {
+    //     dhtPin = readBuffer(6);
+    //     digitals[dhtPin] = 1;
+    // }
+    // break;
     case SERVO_PIN:
     {
         setPortWritable(pin);
-          
         int v = readBuffer(7);
         if (v >= 0 && v <= 180)
         {
@@ -511,9 +452,17 @@ void runModule(int device)
     break;
     case LCD:
     {
+        //  lcd.clear();
         int line = readBuffer(7);
         int col = readBuffer(9);
         String makeLcdString;
+
+        if (line == 3)
+        {
+            lcd.clear();
+            break;
+        }
+
         int arrayNum = 11;
         lcd.setCursor(col, line);
         for (int i = 0; i < 17; i++)
@@ -618,6 +567,16 @@ void sendPinValues()
         callOK();
     }
 
+    if (isDHThumi)
+    {
+        sendDHT();
+        callOK();
+    }
+    if (isDHTtemp)
+    {
+        sendDHT();
+        callOK();
+    }
     if (isBluetooth && millis() - prev_time_BT < 300)
     {
         sendBluetooth();
@@ -645,6 +604,31 @@ void setBluetoothMode(boolean mode)
     if (!mode)
     {
         makeBtString = "";
+    }
+}
+
+void sendDHT()
+{
+    myDHT11.read11(dhtPin);
+    float fTempC = myDHT11.temperature;
+    float fHumid = myDHT11.humidity;
+
+    delay(50);
+    if (isDHTtemp)
+    {
+        writeHead();
+        sendFloat(fTempC);
+        writeSerial(DHTTEMP);
+        writeEnd();
+    }
+
+    if (isDHThumi)
+
+    {
+        writeHead();
+        sendFloat(fHumid);
+        writeSerial(DHTHUMI);
+        writeEnd();
     }
 }
 
