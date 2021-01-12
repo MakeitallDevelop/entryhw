@@ -53,6 +53,7 @@ Servo servos[8];
 Servo sv;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 SoftwareSerial softSerial(2, 3);
 //U8GLIB_SSD1306_128X64 oled(U8G_I2C_OPT_NONE);
