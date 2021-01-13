@@ -421,21 +421,23 @@ void runSet(int device)
         int g = readBuffer(11);
         int b = readBuffer(13);
 
-        strip.setPixelColor(num, r, g, b);
-        /*
-        lcd.init();
-        lcd.backlight();
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(r);
-        lcd.setCursor(6, 0);
-        lcd.print(g);
-        lcd.setCursor(12, 0);
-        lcd.print(b);
-        */
-        //delay(50);
-        strip.show();
-        //delay(50);
+        if (num == 4)
+        {
+            setPortWritable(pin);
+            //strip.begin();
+            strip.setPixelColor(0, 0, 0, 0);
+            strip.setPixelColor(1, 0, 0, 0);
+            strip.setPixelColor(2, 0, 0, 0);
+            strip.setPixelColor(3, 0, 0, 0);
+            strip.show();
+            delay(50);
+            break;
+        }
+        else
+        {
+            strip.setPixelColor(num, r, g, b);
+            strip.show();
+        }
     }
     break;
     case NEOPIXELALL:
@@ -573,35 +575,23 @@ void runModule(int device)
             break;
         }
 
-        int arrayNum = 11;
-        lcd.setCursor(col, line);
-        for (int i = 0; i < 17; i++)
-        {
-            char lcdRead = readBuffer(arrayNum);
-            if (lcdRead > 0)
-                makeLcdString += lcdRead;
-            arrayNum += 2;
-        }
-        lcd.print(makeLcdString);
-        // if (makeLcdString.equals(lastLcdDataLine0) == false || makeLcdString.equals(lastLcdDataLine1) == false)
+        int row = readBuffer(7);
+        int column = readBuffer(9);
+        int len = readBuffer(11);
+        String txt = readString(len, 13);
+        // int arrayNum = 11;
+        // lcd.setCursor(col, line);
+        // for (int i = 0; i < 17; i++)
         // {
-        //     lcd.setCursor(0, pin);
-        //     lcd.print("                ");
+        //     char lcdRead = readBuffer(arrayNum);
+        //     if (lcdRead > 0)
+        //         makeLcdString += lcdRead;
+        //     arrayNum += 2;
         // }
-        // lcd.setCursor(0, pin);
-        // if (readBuffer(7) == 1)
-        // {
-        //     int lcdInt = readShort(9);
-        //     lcd.print(lcdInt);
-        // }
-        // else
-        // {
-        //     lcd.print(makeLcdString);
-        // }
-        // if (pin == 0)
-        //     lastLcdDataLine0 = makeLcdString;
-        // else if (pin == 1)
-        //     lastLcdDataLine1 = makeLcdString;
+        // lcd.print(makeLcdString);
+
+        lcd.setCursor(column, row);
+        lcd.print(txt);
     }
     break;
         //    case OLED: {
@@ -885,6 +875,17 @@ long readLong(int idx)
     val.byteVal[2] = readBuffer(idx + 2);
     val.byteVal[3] = readBuffer(idx + 3);
     return val.longVal;
+}
+String readString(int len, int startIdx)
+{
+    String str = "";
+
+    for (int i = startIdx; i < (startIdx + len); i++)
+    {
+        str += (char)readBuffer(i);
+    }
+
+    return str;
 }
 
 int searchServoPin(int pin)
