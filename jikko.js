@@ -17,6 +17,7 @@ function Module() {
     RGBLED: 13,
     DCMOTOR: 14,
     OLED: 15,
+    PIR: 16,
     LCDINIT: 17,
     DHTHUMI: 18,
     DHTTEMP: 19,

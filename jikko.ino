@@ -36,6 +36,7 @@
 #define RGBLED 13
 #define DCMOTOR 14
 #define OLED 15
+#define PIR 16
 #define LCDINIT 17
 #define DHTHUMI 18
 #define DHTTEMP 19
@@ -550,9 +551,10 @@ void runModule(int device)
         {
             lcd = LiquidCrystal_I2C(0x3f, readBuffer(9), readBuffer(11));
         }
-        lcd.init();
-        lcd.backlight();
-        lcd.clear();
+        // lcd.init();
+        // lcd.backlight();
+        // lcd.clear();
+        initLCD();
     }
     break;
 
@@ -564,18 +566,17 @@ void runModule(int device)
     case LCD:
     {
         //  lcd.clear();
-        int line = readBuffer(7);
-        int col = readBuffer(9);
-        String makeLcdString;
+        // int line = readBuffer(7);
+        // int col = readBuffer(9);
+        // //String makeLcdString;
 
-        if (line == 3)
+        int row = readBuffer(7);
+        if (row == 3)
         {
             lcd.init();
             lcd.clear();
             break;
         }
-
-        int row = readBuffer(7);
         int column = readBuffer(9);
         int len = readBuffer(11);
         String txt = readString(len, 13);
