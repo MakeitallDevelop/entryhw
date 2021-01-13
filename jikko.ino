@@ -421,21 +421,21 @@ void runSet(int device)
         int g = readBuffer(11);
         int b = readBuffer(13);
 
-        strip.setPixelColor(num, r, g, b);
-        /*
-        lcd.init();
-        lcd.backlight();
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print(r);
-        lcd.setCursor(6, 0);
-        lcd.print(g);
-        lcd.setCursor(12, 0);
-        lcd.print(b);
-        */
-        //delay(50);
-        strip.show();
-        //delay(50);
+        if(num == 4){
+            setPortWritable(pin);
+            //strip.begin();
+            strip.setPixelColor(0, 0, 0, 0);
+            strip.setPixelColor(1, 0, 0, 0);
+            strip.setPixelColor(2, 0, 0, 0);
+            strip.setPixelColor(3, 0, 0, 0);
+            strip.show();
+            delay(50);
+            break;
+        }
+        else{
+            strip.setPixelColor(num, r, g, b);
+            strip.show();
+        }
     }
     break;
     case NEOPIXELALL:
