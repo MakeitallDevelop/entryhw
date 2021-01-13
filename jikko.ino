@@ -16,6 +16,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_NeoPixel.h>
+#include <LedControl.h>
 
 //#include "U8glib.h"
 
@@ -46,6 +47,9 @@
 #define NEOPIXEL 22
 #define NEOPIXELALL 23
 #define NEOPIXELCLEAR 24
+#define DOTMATRIXINIT 25
+#define DOTMATRIXBRIGHT 26
+#define DOTMATRIX 27
 
 // State Constant
 #define GET 1
@@ -57,6 +61,7 @@ Servo servos[8];
 Servo sv;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
+LedControl lcjikko = LedControl(12, 10, 11, 1);
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 dht myDHT11;
@@ -116,6 +121,11 @@ boolean isDHTtemp = false;
 
 // End Public Value
 
+void _delay(float seconds){
+    long endTime = millis() + seconds * 1000;
+    while(millis() < endTime);
+}
+
 void setup()
 {                           //초기화
     Serial.begin(115200);   //시리얼 115200
@@ -123,6 +133,7 @@ void setup()
     initPorts();
     initNeo();
     initLCD();
+    initDot();
     delay(200);
 }
 
@@ -150,6 +161,31 @@ void initLCD()
     // lcd.print("Blacksmith Board");
     // lcd.setCursor(6, 1);
     // lcd.print("with Entry");
+}
+
+void initDot()
+{
+    lcjikko.shutdown(0, false);
+    lcjikko.setIntensity(0, 1);
+    lcjikko.clearDisplay(0);
+    
+    lcd.setCursor(0, 0);
+    lcd.print("DOTMATRIX");
+    lcd.setCursor(0, 1);
+    lcd.print("INIT");
+    delay(200);
+    lcd.clear();
+
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            if(j%2 == 0)
+                lcjikko.setLed(0, i, j, LOW);
+            else
+                lcjikko.setLed(0, i, j, HIGH);
+        }
+    }
+
+    delay(1000);
 }
 
 void loop()
@@ -471,6 +507,79 @@ void runSet(int device)
         //delay(1);
     }
     break;
+    
+    case DOTMATRIXINIT:
+    {
+        //setPortWritable(pin);
+        lcd.setCursor(0, 0);
+        lcd.print(pin);
+
+        byte m[8] = {
+            B10000001,
+            B11000011,
+            B10100101,
+            B10101001,
+            B10010001,
+            B10100101,
+            B11000011,
+            B10000001
+        };
+        initDot();
+        /*
+        for(int row = 0; row < 8; row++){
+            lcjikko.setRow(0, row, m[row]);
+            delay(25);
+        }
+        delay(200);
+        */
+        /*
+        for(int i = 0; i < 8; i++){
+            for(int j = 0; j < 8; j++){
+                if(j%2 == 0) {
+                    lcjikko.setLed(0, i, j, LOW);
+                }
+                else {
+                    lcjikko.setLed(0, i, j, HIGH);
+                }
+            }
+            if(i%2 == 0){
+                strip.setPixelColor(0, 0, 255, 0);
+                strip.show();
+            }
+            else{
+                strip.setPixelColor(0, 255, 0, 0);
+                strip.show();
+            }
+        }
+        
+        lcd.setCursor(0, 0);
+        lcd.print("DOT");
+        lcd.setCursor(0, 1);
+        lcd.print("PRINT");
+        delay(100);
+        lcd.clear();
+        */
+    }
+    break;
+    case DOTMATRIXBRIGHT:
+    {
+        setPortWritable(pin);
+        int bright = readBuffer(7);
+        lcjikko.setIntensity(0, bright);
+
+        lcd.setCursor(0, 0);
+        lcd.print(pin);
+        lcd.setCursor(0, 1);
+        lcd.print(bright);
+    }
+    break;
+    /*
+    case DOTMATRIX:
+    {
+
+    }
+    break;
+    */
     case SERVO_PIN:
     {
         setPortWritable(pin);
@@ -1201,163 +1310,3 @@ void rgbLedVer1(int pin)
     } // if(8 <= pin && pin <= 13)
     sei();
 }
-
-/*
-// 대장장이 주니어 3, 8, 9 번핀 작동 함수
-void rgbLedVer2(int pin) {
-  byte color[3] = {0};
-  byte colorBuff[3][8] = {0};
-  setPortWritable(pin);
-  color[0] = readBuffer(9);   // green
-  color[1] = readBuffer(7);   // red
-  color[2] = readBuffer(11);  // blue
-  if (color[0] > 254) color[0] = 254; // 255 일 경우 오동작이 자주 됨
-  if (color[1] > 254) color[1] = 254; // 255 일 경우 오동작이 자주 됨
-  if (color[2] > 254) color[2] = 254; // 255 일 경우 오동작이 자주 됨
-  for (int i = 0; i < 3; i++) {
-    for (int j = 7; j >= 0; j--) {
-      colorBuff[i][j] = (color[i] >> j ) & 0x01;
-    }
-  }
-  if (2 <= pin && pin <= 7) {
-    if (pin == 3) PORTD &= ~B00001000;
-    for (register unsigned char i = 0; i < 85; i++) // 80 us
-    {
-      asm volatile(" PUSH R0 ");
-      asm volatile(" POP R0 ");
-      asm volatile(" PUSH R0 ");
-      asm volatile(" POP R0 ");
-      asm volatile(" PUSH R0 ");
-      asm volatile(" POP R0 ");
-    }
-    for (int i = 0; i < 3; i++) {
-      for (int j = 7; j >= 0; j--) {
-        if (colorBuff[i][j] == 1) {
-          if (pin == 3) PORTD |= B00001000;
-          for (register unsigned char i = 0; i < 27; i++) // 25 us
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-          if (pin == 3) PORTD &= ~B00001000;
-          for (register unsigned char i = 0; i < 26; i++) // 25 us
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-        }
-        else {
-          if (pin == 3) PORTD |= B00001000;
-          for (register unsigned char i = 0; i < 16; i++) // 15 us
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-          if (pin == 3) PORTD &= ~B00001000;
-          for (register unsigned char i = 0; i < 15; i++) // 15 us
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-        }
-      }
-    }
-    if (pin == 3) PORTD |= B00001000;
-  } // if(2 <= pin && pin <= 7)
-
-  else if (8 <= pin && pin <= 13) {
-    if (pin == 8) PORTB &= ~B00000001;
-    else if (pin == 9) PORTB &= ~B00000010;
-    for (register unsigned char i = 0; i < 85; i++)
-    {
-      asm volatile(" PUSH R0 ");
-      asm volatile(" POP R0 ");
-      asm volatile(" PUSH R0 ");
-      asm volatile(" POP R0 ");
-      asm volatile(" PUSH R0 ");
-      asm volatile(" POP R0 ");
-    }
-    for (int i = 0; i < 3; i++) {
-      for (int j = 7; j >= 0; j--) {
-        if (colorBuff[i][j] == 1) {
-          if (pin == 8) PORTB |= B00000001;
-          else if (pin == 9) PORTB |= B00000010;
-          for (register unsigned char i = 0; i < 27; i++)
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-          if (pin == 8) PORTB &= ~B00000001;
-          else if (pin == 9) PORTB &= ~B00000010;
-          for (register unsigned char i = 0; i < 26; i++)
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-        }
-        else {
-          if (pin == 8) PORTB |= B00000001;
-          else if (pin == 9) PORTB |= B00000010;
-          for (register unsigned char i = 0; i < 16; i++)
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-          if (pin == 8) PORTB &= ~B00000001;
-          else if (pin == 9) PORTB &= ~B00000010;
-          for (register unsigned char i = 0; i < 15; i++)
-          {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-          }
-        }
-      }
-    }
-    if (pin == 8) PORTB |= B00000001;
-    else if (pin == 9) PORTB |= B00000010;
-  } // if(8 <= pin && pin <= 13)
-}
-*/
-/**********************************************************************************
-   The following software may be included in this software : orion_firmware.ino
-   from http://www.makeblock.cc/
-   This software contains the following license and notice below:
-   CC-BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
-   Author : Ander, Mark Yan
-   Updated : Ander, Mark Yan
-   Date : 01/09/2016
-   Description : Firmware for Makeblock Electronic modules with Scratch.
-   Copyright (C) 2013 - 2016 Maker Works Technology Co., Ltd. All right reserved.
- **********************************************************************************/
