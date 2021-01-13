@@ -244,8 +244,8 @@ Module.prototype.requestLocalData = function () {
 };
 
 /*
-ff 55 idx size data a
-*/
+  ff 55 idx size data a
+  */
 Module.prototype.handleLocalData = function (data) {
   const self = this;
   const datas = this.getDataByBuffer(data);
@@ -326,9 +326,9 @@ Module.prototype.handleLocalData = function (data) {
 };
 
 /*
-ff 55 len idx action device port  slot  data a
-0  1  2   3   4      5      6     7     8
-*/
+  ff 55 len idx action device port  slot  data a
+  0  1  2   3   4      5      6     7     8
+  */
 
 Module.prototype.makeSensorReadBuffer = function (device, port, data) {
   let buffer;
@@ -574,7 +574,6 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, num, r, g, b, dummy]);
-      console.log(num);
       break;
     }
     case this.sensorTypes.NEOPIXELALL: {
@@ -615,35 +614,6 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       buffer = Buffer.concat([buffer, dummy]);
       break;
     }
-    case this.sensorTypes.LCDINIT: {
-      var list = new Buffer(2);
-      var line = new Buffer(2);
-      var col = new Buffer(2);
-      if ($.isPlainObject(data)) {
-        list.writeInt16LE(data.list);
-        line.writeInt16LE(data.line);
-        col.writeInt16LE(data.col);
-        console.log(data.list);
-        console.log(data.col);
-        console.log(data.line);
-      }
-      buffer = new Buffer([
-        255,
-        85,
-        10,
-        sensorIdx,
-        this.actionTypes.MODUEL,
-        device,
-        port,
-      ]);
-      buffer = Buffer.concat([buffer, list, col, line, dummy]);
-      //console.log(buffer);
-      console.log(list);
-      console.log(col);
-      console.log(line);
-
-      break;
-    }
     case this.sensorTypes.LCDCLEAR: {
       buffer = new Buffer([
         255,
@@ -658,116 +628,94 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
     case this.sensorTypes.LCD: {
-      var text;
       var line = new Buffer(2);
-      var col = new Buffer(2);
-      var textLen = 0;
-      var textLenBuf = Buffer(2);
-      // var line = new Buffer(2);
-      // var column = new Buffer(2);
+      var column = new Buffer(2);
 
-      // var text0 = new Buffer(2);
-      // var text1 = new Buffer(2);
-      // var text2 = new Buffer(2);
-      // var text3 = new Buffer(2);
-      // var text4 = new Buffer(2);
-      // var text5 = new Buffer(2);
-      // var text6 = new Buffer(2);
-      // var text7 = new Buffer(2);
-      // var text8 = new Buffer(2);
-      // var text9 = new Buffer(2);
-      // var text10 = new Buffer(2);
-      // var text11 = new Buffer(2);
-      // var text12 = new Buffer(2);
-      // var text13 = new Buffer(2);
-      // var text14 = new Buffer(2);
-      //var text15 = new Buffer(2);
+      var text0 = new Buffer(2);
+      var text1 = new Buffer(2);
+      var text2 = new Buffer(2);
+      var text3 = new Buffer(2);
+      var text4 = new Buffer(2);
+      var text5 = new Buffer(2);
+      var text6 = new Buffer(2);
+      var text7 = new Buffer(2);
+      var text8 = new Buffer(2);
+      var text9 = new Buffer(2);
+      var text10 = new Buffer(2);
+      var text11 = new Buffer(2);
+      var text12 = new Buffer(2);
+      var text13 = new Buffer(2);
+      var text14 = new Buffer(2);
+      var text15 = new Buffer(2);
       if ($.isPlainObject(data)) {
-        textLen = ("" + data.text).length;
-        text = Buffer.from("" + data.text, "ascii");
         line.writeInt16LE(data.line);
-        textLenBuf.writeInt16LE(textLen);
-        col.writeInt16LE(data.col);
-        // line.writeInt16LE(data.line);
-        // column.writeInt16LE(data.column);
+        column.writeInt16LE(data.column);
 
-        // text0.writeInt16LE(data.text0);
-        // text1.writeInt16LE(data.text1);
-        // text2.writeInt16LE(data.text2);
-        // text3.writeInt16LE(data.text3);
-        // text4.writeInt16LE(data.text4);
-        // text5.writeInt16LE(data.text5);
-        // text6.writeInt16LE(data.text6);
-        // text7.writeInt16LE(data.text7);
-        // text8.writeInt16LE(data.text8);
-        // text9.writeInt16LE(data.text9);
-        // text10.writeInt16LE(data.text10);
-        // text11.writeInt16LE(data.text11);
-        // text12.writeInt16LE(data.text12);
-        // text13.writeInt16LE(data.text13);
-        // text14.writeInt16LE(data.text14);
-        // text15.writeInt16LE(data.text15);
+        text0.writeInt16LE(data.text0);
+        text1.writeInt16LE(data.text1);
+        text2.writeInt16LE(data.text2);
+        text3.writeInt16LE(data.text3);
+        text4.writeInt16LE(data.text4);
+        text5.writeInt16LE(data.text5);
+        text6.writeInt16LE(data.text6);
+        text7.writeInt16LE(data.text7);
+        text8.writeInt16LE(data.text8);
+        text9.writeInt16LE(data.text9);
+        text10.writeInt16LE(data.text10);
+        text11.writeInt16LE(data.text11);
+        text12.writeInt16LE(data.text12);
+        text13.writeInt16LE(data.text13);
+        text14.writeInt16LE(data.text14);
+        text15.writeInt16LE(data.text15);
       } else {
-        textLen = 0;
-        text = Buffer.from("", "ascii");
-        line.writeInt16LE(0);
-        textLenBuf.writeInt16LE(textLen);
-        col.writeInt16LE(0);
-        // line.writeInt16LE(0);
-        // column.writeInt16LE(0);
-
-        // text0.writeInt16LE(0);
-        // text1.writeInt16LE(0);
-        // text2.writeInt16LE(0);
-        // text3.writeInt16LE(0);
-        // text4.writeInt16LE(0);
-        // text5.writeInt16LE(0);
-        // text6.writeInt16LE(0);
-        // text7.writeInt16LE(0);
-        // text8.writeInt16LE(0);
-        // text9.writeInt16LE(0);
-        // text10.writeInt16LE(0);
-        // text11.writeInt16LE(0);
-        // text12.writeInt16LE(0);
-        // text13.writeInt16LE(0);
-        // text14.writeInt16LE(0);
-        // text15.writeInt16LE(0);
+        text0.writeInt16LE(0);
+        text1.writeInt16LE(0);
+        text2.writeInt16LE(0);
+        text3.writeInt16LE(0);
+        text4.writeInt16LE(0);
+        text5.writeInt16LE(0);
+        text6.writeInt16LE(0);
+        text7.writeInt16LE(0);
+        text8.writeInt16LE(0);
+        text9.writeInt16LE(0);
+        text10.writeInt16LE(0);
+        text11.writeInt16LE(0);
+        text12.writeInt16LE(0);
+        text13.writeInt16LE(0);
+        text14.writeInt16LE(0);
+        text15.writeInt16LE(0);
       }
       buffer = new Buffer([
         255,
         85,
-        4 + 6 + textLen,
+        36,
         sensorIdx,
         this.actionTypes.MODUEL,
         device,
         port,
       ]);
-
-      buffer = Buffer.concat([buffer, line, col, textLenBuf, text, dummy]);
-
-      // buffer = new Buffer([255, 85, 36, sensorIdx, this.actionTypes.MODUEL, device, port]);
-      // buffer = Buffer.concat([
-      //     buffer,
-      //     line,
-      //     column,
-      //     text0,
-      //     text1,
-      //     text2,
-      //     text3,
-      //     text4,
-      //     text5,
-      //     text6,
-      //     text7,
-      //     text8,
-      //     text9,
-      //     text10,
-      //     text11,
-      //     text12,
-      //     text13,
-      //     text14,
-      //     text15,
-      //     dummy,
-      // ]);
+      buffer = Buffer.concat([
+        buffer,
+        line,
+        column,
+        text0,
+        text1,
+        text2,
+        text3,
+        text4,
+        text5,
+        text6,
+        text7,
+        text8,
+        text9,
+        text10,
+        text11,
+        text12,
+        text13,
+        text14,
+        text15,
+        dummy,
+      ]);
       break;
     }
     case this.sensorTypes.OLED: {
