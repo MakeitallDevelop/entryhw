@@ -17,6 +17,7 @@
 #include <SoftwareSerial.h>
 #include <Adafruit_NeoPixel.h>
 #include <LedControl.h>
+#include <DFRobotDFPlayerMini.h>
 
 //#include "U8glib.h"
 
@@ -51,6 +52,10 @@
 #define DOTMATRIXBRIGHT 26
 #define DOTMATRIX 27
 #define DOTMATRIXCLEAR 28
+#define MP3INIT 29
+#define MP3PLAY1 30
+#define MP3PLAY2 31
+#define MP3VOL 32
 
 // State Constant
 #define GET 1
@@ -62,11 +67,17 @@ Servo servos[8];
 Servo sv;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
+
+SoftwareSerial MP3Module = SoftwareSerial(2, 3);
+int vol = 15;
+
 //LedControl lcjikko = LedControl(12, 11, 10, 1);
+DFRobotDFPlayerMini MP3Player;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 dht myDHT11;
 SoftwareSerial softSerial(2, 3);
+
 //U8GLIB_SSD1306_128X64 oled(U8G_I2C_OPT_NONE);
 
 // val Union        //??
@@ -133,6 +144,7 @@ void setup()
 {                           //초기화
     Serial.begin(115200);   //시리얼 115200
     softSerial.begin(9600); //블루투스 9600
+    //MP3Module.begin(9600);
     initPorts();
     initNeo();
     initLCD();
@@ -396,7 +408,7 @@ void runSet(int device)
     {
         setUltrasonicMode(false);
     }
-
+    
     switch (device)
     {
     case DIGITAL:
@@ -522,7 +534,7 @@ void runSet(int device)
         LedControl lcjikko = LedControl(12, 11, 10, 1);
 
         lcjikko.shutdown(0, false);
-        lcjikko.setIntensity(0, 10);
+        lcjikko.setIntensity(0, 1);
 
         byte m[8] = {
             B10000001,
@@ -540,6 +552,7 @@ void runSet(int device)
             lcjikko.setRow(0, row, m[row]);
             //delay(25);
         }
+        delay(1);
     }
     break;
     case DOTMATRIXCLEAR:
@@ -567,6 +580,47 @@ void runSet(int device)
     }
     break;
     */
+    case MP3INIT:
+    {
+        int tx = readBuffer(7);
+        int rx = readBuffer(9);
+
+        MP3Module = SoftwareSerial(rx, tx);
+
+
+        MP3Module.begin(9600);
+        MP3Player.begin(MP3Module);
+        vol = 15;
+        MP3Player.volume(vol);
+
+        //MP3Player.volume(15);
+        //MP3Player.play(1);
+    }
+    break;
+    case MP3PLAY1:
+    {
+        int num = readBuffer(9);
+        MP3Player.play(num);
+    }
+    break;
+    case MP3PLAY2:
+    {
+        int num = readBuffer(9);
+        int time_value = readBuffer(11);
+        MP3Player.play(num);
+        delay(time_value*1000);
+        MP3Player.volume(0);
+        MP3Player.play(1);
+    }
+    break;
+    case MP3VOL:
+    {
+        vol = readBuffer(9);
+        MP3Module.begin(9600);
+        MP3Player.begin(MP3Module);
+        MP3Player.volume(vol);
+    }
+    break;
     case SERVO_PIN:
     {
         setPortWritable(pin);
