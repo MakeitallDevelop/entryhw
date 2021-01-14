@@ -29,6 +29,7 @@ function Module() {
     DOTMATRIXINIT: 25,
     DOTMATRIXBRIGHT: 26,
     DOTMATRIX: 27,
+    DOTMATRIXCLEAR: 28,
   };
 
   this.actionTypes = {
@@ -623,23 +624,23 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       const port2 = new Buffer(2);
       const port3 = new Buffer(2);
       if ($.isPlainObject(data)) {
-          port1.writeInt16LE(data.port1);
-          port2.writeInt16LE(data.port2);
-          port3.writeInt16LE(data.port3);
-        } else {
-          port1.writeInt16LE(0);
-          port2.writeInt16LE(0);
-          port3.writeInt16LE(0);
-        }
+        port1.writeInt16LE(data.port1);
+        port2.writeInt16LE(data.port2);
+        port3.writeInt16LE(data.port3);
+      } else {
+        port1.writeInt16LE(0);
+        port2.writeInt16LE(0);
+        port3.writeInt16LE(0);
+      }
       buffer = new Buffer([
-            255,
-            85,
-            10,
-            sensorIdx,
-            this.actionTypes.SET,
-            device,
-            port,
-        ]);
+        255,
+        85,
+        10,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
       buffer = Buffer.concat([buffer, port1, port2, port3, dummy]);
       break;
     }
@@ -669,7 +670,20 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, value, dummy]);
-       break;
+      break;
+    }
+    case this.sensorTypes.DOTMATRIXCLEAR: {
+      buffer = new Buffer([
+        255,
+        85,
+        4,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, dummy]);
+      break;
     }
     case this.sensorTypes.LCDINIT: {
       var list = new Buffer(2);
