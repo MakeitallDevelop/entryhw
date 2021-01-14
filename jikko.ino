@@ -50,6 +50,7 @@
 #define DOTMATRIXINIT 25
 #define DOTMATRIXBRIGHT 26
 #define DOTMATRIX 27
+#define DOTMATRIXCLEAR 28
 
 // State Constant
 #define GET 1
@@ -61,7 +62,7 @@ Servo servos[8];
 Servo sv;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
-LedControl lcjikko = LedControl(12, 10, 11, 1);
+//LedControl lcjikko = LedControl(12, 11, 10, 1);
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 dht myDHT11;
@@ -121,9 +122,11 @@ boolean isDHTtemp = false;
 
 // End Public Value
 
-void _delay(float seconds){
+void _delay(float seconds)
+{
     long endTime = millis() + seconds * 1000;
-    while(millis() < endTime);
+    while (millis() < endTime)
+        ;
 }
 
 void setup()
@@ -133,7 +136,7 @@ void setup()
     initPorts();
     initNeo();
     initLCD();
-    initDot();
+    // initDot();
     delay(200);
 }
 
@@ -165,27 +168,32 @@ void initLCD()
 
 void initDot()
 {
-    lcjikko.shutdown(0, false);
-    lcjikko.setIntensity(0, 1);
-    lcjikko.clearDisplay(0);
-    
-    lcd.setCursor(0, 0);
-    lcd.print("DOTMATRIX");
-    lcd.setCursor(0, 1);
-    lcd.print("INIT");
-    delay(200);
-    lcd.clear();
+    // lcjikko = LedControl(12, 11, 10, 1);
+    // lcjikko.shutdown(0, false);
+    // lcjikko.setIntensity(0, 1);
+    // lcjikko.clearDisplay(0);
 
-    for(int i = 0; i < 8; i++){
-        for(int j = 0; j < 8; j++){
-            if(j%2 == 0)
-                lcjikko.setLed(0, i, j, LOW);
-            else
-                lcjikko.setLed(0, i, j, HIGH);
-        }
-    }
+    // lcd.setCursor(0, 0);
+    // lcd.print("DOTMATRIX");
+    // lcd.setCursor(0, 1);
+    // lcd.print("INIT");
+    // delay(200);
+    // lcd.clear();
 
-    delay(1000);
+    // for (int i = 0; i < 8; i++)
+    // {
+    //     for (int j = 0; j < 8; j++)
+    //     {
+    //         if (j % 2 == 0)
+    //             lcjikko.setLed(0, i, j, LOW);
+    //         else
+    //             lcjikko.setLed(0, i, j, HIGH);
+    //     }
+    // }
+
+    //delay(1000);
+    //lcjikko.clearDisplay(0);
+    //delay(1000);
 }
 
 void loop()
@@ -507,12 +515,14 @@ void runSet(int device)
         //delay(1);
     }
     break;
-    
+
     case DOTMATRIXINIT:
     {
-        //setPortWritable(pin);
-        lcd.setCursor(0, 0);
-        lcd.print(pin);
+
+        LedControl lcjikko = LedControl(12, 11, 10, 1);
+
+        lcjikko.shutdown(0, false);
+        lcjikko.setIntensity(0, 10);
 
         byte m[8] = {
             B10000001,
@@ -522,55 +532,32 @@ void runSet(int device)
             B10010001,
             B10100101,
             B11000011,
-            B10000001
-        };
-        initDot();
-        /*
-        for(int row = 0; row < 8; row++){
+            B10000001};
+        // initDot();
+
+        for (int row = 0; row < 8; row++)
+        {
             lcjikko.setRow(0, row, m[row]);
-            delay(25);
+            //delay(25);
         }
-        delay(200);
-        */
-        /*
-        for(int i = 0; i < 8; i++){
-            for(int j = 0; j < 8; j++){
-                if(j%2 == 0) {
-                    lcjikko.setLed(0, i, j, LOW);
-                }
-                else {
-                    lcjikko.setLed(0, i, j, HIGH);
-                }
-            }
-            if(i%2 == 0){
-                strip.setPixelColor(0, 0, 255, 0);
-                strip.show();
-            }
-            else{
-                strip.setPixelColor(0, 255, 0, 0);
-                strip.show();
-            }
-        }
-        
-        lcd.setCursor(0, 0);
-        lcd.print("DOT");
-        lcd.setCursor(0, 1);
-        lcd.print("PRINT");
-        delay(100);
-        lcd.clear();
-        */
     }
     break;
+    case DOTMATRIXCLEAR:
+    {
+        LedControl lcjikko = LedControl(12, 11, 10, 1);
+
+        lcjikko.clearDisplay(0);
+    }
     case DOTMATRIXBRIGHT:
     {
-        setPortWritable(pin);
-        int bright = readBuffer(7);
-        lcjikko.setIntensity(0, bright);
+        // setPortWritable(pin);
+        // int bright = readBuffer(7);
+        // lcjikko.setIntensity(0, bright);
 
-        lcd.setCursor(0, 0);
-        lcd.print(pin);
-        lcd.setCursor(0, 1);
-        lcd.print(bright);
+        // lcd.setCursor(0, 0);
+        // lcd.print(pin);
+        // lcd.setCursor(0, 1);
+        // lcd.print(bright);
     }
     break;
     /*
