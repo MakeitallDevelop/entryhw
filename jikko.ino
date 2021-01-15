@@ -69,7 +69,9 @@ Servo sv;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
 
 SoftwareSerial MP3Module = SoftwareSerial(2, 3);
-int vol = 15;
+int vol;
+
+unsigned long previousMillis = 0;
 
 //LedControl lcjikko = LedControl(12, 11, 10, 1);
 DFRobotDFPlayerMini MP3Player;
@@ -592,14 +594,13 @@ void runSet(int device)
         MP3Player.begin(MP3Module);
         vol = 15;
         MP3Player.volume(vol);
-
-        //MP3Player.volume(15);
-        //MP3Player.play(1);
     }
     break;
     case MP3PLAY1:
     {
         int num = readBuffer(9);
+        
+        delay(10);
         MP3Player.play(num);
     }
     break;
@@ -607,17 +608,39 @@ void runSet(int device)
     {
         int num = readBuffer(9);
         int time_value = readBuffer(11);
+        
+        //MP3Player.play(num);
         MP3Player.play(num);
-        delay(time_value*1000);
-        MP3Player.volume(0);
-        MP3Player.play(1);
+        
+        /*
+        for(int i = 0; i < temp; i++){
+            delay(1000);
+        }
+        */
+        //long left = (time_value - temp) * 1000;
+
+        unsigned long currentMillis;
+        previousMillis = millis();
+
+        while(time_value != 0){
+            currentMillis = millis();
+            
+            if(currentMillis - previousMillis > 1000){
+                previousMillis = currentMillis;
+                time_value--;
+                //MP3Player.stop();
+                //break;
+            }
+        }
+        MP3Player.stop();
     }
     break;
     case MP3VOL:
     {
         vol = readBuffer(9);
-        MP3Module.begin(9600);
-        MP3Player.begin(MP3Module);
+        ///MP3Module.begin(9600);
+        //MP3Player.begin(MP3Module);
+        //delay(10);
         MP3Player.volume(vol);
     }
     break;
