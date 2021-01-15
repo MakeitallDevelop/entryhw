@@ -34,6 +34,7 @@ function Module() {
     MP3PLAY1: 30,
     MP3PLAY2: 31,
     MP3VOL: 32,
+    RESET_: 33,
   };
 
   this.actionTypes = {
@@ -445,6 +446,20 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       buffer = Buffer.concat([buffer, value, dummy]);
       break;
     }
+    case this.sensorTypes.RESET_: {
+      buffer = new Buffer([
+        255,
+        85,
+        4,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, dummy]);
+      console.log(buffer);
+      break;
+    }
     case this.sensorTypes.RGBLED: {
       const redValue = new Buffer(2);
       const greenValue = new Buffer(2);
@@ -697,9 +712,9 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         list.writeInt16LE(data.list);
         line.writeInt16LE(data.line);
         col.writeInt16LE(data.col);
-        console.log(data.list);
-        console.log(data.col);
-        console.log(data.line);
+        //  console.log(data.list);
+        //  console.log(data.col);
+        //   console.log(data.line);
       }
       buffer = new Buffer([
         255,
@@ -712,9 +727,9 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       ]);
       buffer = Buffer.concat([buffer, list, col, line, dummy]);
       //console.log(buffer);
-      console.log(list);
-      console.log(col);
-      console.log(line);
+      // console.log(list);
+      // console.log(col);
+      // console.log(line);
 
       break;
     }
@@ -847,7 +862,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
     case this.sensorTypes.MP3INIT: {
       const tx = new Buffer(2);
       const rx = new Buffer(2);
-        
+
       if ($.isPlainObject(data)) {
         tx.writeInt16LE(data.tx);
         rx.writeInt16LE(data.rx);
@@ -855,7 +870,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         tx.writeInt16LE(0);
         rx.writeInt16LE(0);
       }
-        
+
       buffer = new Buffer([
         255,
         85,
@@ -865,14 +880,14 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         device,
         port,
       ]);
-        
+
       buffer = Buffer.concat([buffer, tx, rx, dummy]);
       break;
     }
     case this.sensorTypes.MP3PLAY1: {
       const tx = new Buffer(2);
       const num = new Buffer(2);
-        
+
       if ($.isPlainObject(data)) {
         tx.writeInt16LE(data.tx);
         num.writeInt16LE(data.num);
@@ -880,7 +895,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         tx.writeInt16LE(0);
         num.writeInt16LE(0);
       }
-        
+
       buffer = new Buffer([
         255,
         85,
@@ -890,7 +905,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         device,
         port,
       ]);
-        
+
       buffer = Buffer.concat([buffer, tx, num, dummy]);
       break;
     }
@@ -898,7 +913,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       const tx = new Buffer(2);
       const num = new Buffer(2);
       const time_value = new Buffer(2);
-        
+
       if ($.isPlainObject(data)) {
         tx.writeInt16LE(data.tx);
         num.writeInt16LE(data.num);
@@ -908,7 +923,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         num.writeInt16LE(0);
         time_value.writeInt16LE(0);
       }
-        
+
       buffer = new Buffer([
         255,
         85,
@@ -918,14 +933,14 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         device,
         port,
       ]);
-        
+
       buffer = Buffer.concat([buffer, tx, num, time_value, dummy]);
       break;
     }
     case this.sensorTypes.MP3VOL: {
       const tx = new Buffer(2);
       const vol = new Buffer(2);
-        
+
       if ($.isPlainObject(data)) {
         tx.writeInt16LE(data.tx);
         vol.writeInt16LE(data.vol);
@@ -933,7 +948,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         tx.writeInt16LE(0);
         vol.writeInt16LE(0);
       }
-        
+
       buffer = new Buffer([
         255,
         85,
@@ -943,7 +958,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         device,
         port,
       ]);
-        
+
       buffer = Buffer.concat([buffer, tx, vol, dummy]);
       break;
     }
