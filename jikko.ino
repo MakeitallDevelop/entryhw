@@ -51,6 +51,7 @@
 #define DOTMATRIXBRIGHT 26
 #define DOTMATRIX 27
 #define DOTMATRIXCLEAR 28
+#define RESET_ 33
 
 // State Constant
 #define GET 1
@@ -62,11 +63,10 @@ Servo servos[8];
 Servo sv;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
-//LedControl lcjikko = LedControl(12, 11, 10, 1);
-
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 dht myDHT11;
 SoftwareSerial softSerial(2, 3);
+
 //U8GLIB_SSD1306_128X64 oled(U8G_I2C_OPT_NONE);
 
 // val Union        //??
@@ -92,6 +92,12 @@ int servo_pins[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 float lastUltrasonic = 0;
 int trigPin = 13;
 int echoPin = 12;
+int dinPin = 12;
+int clkPin = 11;
+int csPin = 10;
+int dotBright = 8;
+
+bool dotFlag = false;
 
 int dhtPin = 0;
 int dhtMode = 0;
@@ -136,7 +142,6 @@ void setup()
     initPorts();
     initNeo();
     initLCD();
-    // initDot();
     delay(200);
 }
 
@@ -164,36 +169,6 @@ void initLCD()
     // lcd.print("Blacksmith Board");
     // lcd.setCursor(6, 1);
     // lcd.print("with Entry");
-}
-
-void initDot()
-{
-    // lcjikko = LedControl(12, 11, 10, 1);
-    // lcjikko.shutdown(0, false);
-    // lcjikko.setIntensity(0, 1);
-    // lcjikko.clearDisplay(0);
-
-    // lcd.setCursor(0, 0);
-    // lcd.print("DOTMATRIX");
-    // lcd.setCursor(0, 1);
-    // lcd.print("INIT");
-    // delay(200);
-    // lcd.clear();
-
-    // for (int i = 0; i < 8; i++)
-    // {
-    //     for (int j = 0; j < 8; j++)
-    //     {
-    //         if (j % 2 == 0)
-    //             lcjikko.setLed(0, i, j, LOW);
-    //         else
-    //             lcjikko.setLed(0, i, j, HIGH);
-    //     }
-    // }
-
-    //delay(1000);
-    //lcjikko.clearDisplay(0);
-    //delay(1000);
 }
 
 void loop()
@@ -399,6 +374,22 @@ void runSet(int device)
 
     switch (device)
     {
+    case RESET_:
+    {
+        lcd.init();
+        lcd.clear();
+
+        LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
+        lcjikko->clearDisplay(0);
+        delete lcjikko;
+
+        strip.setPixelColor(0, 0, 0, 0);
+        strip.setPixelColor(1, 0, 0, 0);
+        strip.setPixelColor(2, 0, 0, 0);
+        strip.setPixelColor(3, 0, 0, 0);
+        strip.show();
+    }
+    break;
     case DIGITAL:
     {
         setPortWritable(pin);
@@ -466,23 +457,23 @@ void runSet(int device)
         int g = readBuffer(11);
         int b = readBuffer(13);
 
-        if (num == 4)
-        {
-            setPortWritable(pin);
-            //strip.begin();
-            strip.setPixelColor(0, 0, 0, 0);
-            strip.setPixelColor(1, 0, 0, 0);
-            strip.setPixelColor(2, 0, 0, 0);
-            strip.setPixelColor(3, 0, 0, 0);
-            strip.show();
-            delay(50);
-            break;
-        }
-        else
-        {
-            strip.setPixelColor(num, r, g, b);
-            strip.show();
-        }
+        // if (num == 4)
+        // {
+        //     setPortWritable(pin);
+        //     //strip.begin();
+        //     strip.setPixelColor(0, 0, 0, 0);
+        //     strip.setPixelColor(1, 0, 0, 0);
+        //     strip.setPixelColor(2, 0, 0, 0);
+        //     strip.setPixelColor(3, 0, 0, 0);
+        //     strip.show();
+        //     delay(50);
+        //     break;
+        // }
+        // else
+        // {
+        strip.setPixelColor(num, r, g, b);
+        strip.show();
+        // }
     }
     break;
     case NEOPIXELALL:
@@ -518,11 +509,37 @@ void runSet(int device)
 
     case DOTMATRIXINIT:
     {
+        dinPin = readBuffer(7);
+        clkPin = readBuffer(9);
+        csPin = readBuffer(11);
 
-        LedControl lcjikko = LedControl(12, 11, 10, 1);
+        // lcjikko.shutdown(0, true);
+    }
+    break;
+    case DOTMATRIXCLEAR:
+    {
+        LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
+        lcjikko->clearDisplay(0);
+        delete lcjikko;
+    }
+    break;
+    case DOTMATRIXBRIGHT:
+    {
+        // setPortWritable(pin);
+        dotBright = readBuffer(7);
+        // lcjikko.setIntensity(0, bright);
 
-        lcjikko.shutdown(0, false);
-        lcjikko.setIntensity(0, 10);
+        // lcd.setCursor(0, 0);
+        // lcd.print(pin);
+        // lcd.setCursor(0, 1);
+        // lcd.print(bright);
+    }
+    break;
+    case DOTMATRIX:
+    {
+        LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
+        lcjikko->shutdown(0, false);
+        lcjikko->setIntensity(0, dotBright);
 
         byte m[8] = {
             B10000001,
@@ -537,36 +554,15 @@ void runSet(int device)
 
         for (int row = 0; row < 8; row++)
         {
-            lcjikko.setRow(0, row, m[row]);
-            //delay(25);
+            lcjikko->setRow(0, row, m[row]);
+            // delay(25);
         }
+        // delay(100);
+        //delay(5000);
+        delete lcjikko;
     }
     break;
-    case DOTMATRIXCLEAR:
-    {
-        LedControl lcjikko = LedControl(12, 11, 10, 1);
 
-        lcjikko.clearDisplay(0);
-    }
-    case DOTMATRIXBRIGHT:
-    {
-        // setPortWritable(pin);
-        // int bright = readBuffer(7);
-        // lcjikko.setIntensity(0, bright);
-
-        // lcd.setCursor(0, 0);
-        // lcd.print(pin);
-        // lcd.setCursor(0, 1);
-        // lcd.print(bright);
-    }
-    break;
-    /*
-    case DOTMATRIX:
-    {
-
-    }
-    break;
-    */
     case SERVO_PIN:
     {
         setPortWritable(pin);
@@ -667,12 +663,12 @@ void runModule(int device)
         // //String makeLcdString;
 
         int row = readBuffer(7);
-        if (row == 3)
-        {
-            lcd.init();
-            lcd.clear();
-            break;
-        }
+        // if (row == 3)
+        // {
+        //     lcd.init();
+        //     lcd.clear();
+        //     break;
+        // }
         int column = readBuffer(9);
         int len = readBuffer(11);
         String txt = readString(len, 13);

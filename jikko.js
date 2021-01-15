@@ -30,6 +30,7 @@ function Module() {
     DOTMATRIXBRIGHT: 26,
     DOTMATRIX: 27,
     DOTMATRIXCLEAR: 28,
+    RESET_: 33,
   };
 
   this.actionTypes = {
@@ -441,6 +442,20 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       buffer = Buffer.concat([buffer, value, dummy]);
       break;
     }
+    case this.sensorTypes.RESET_: {
+      buffer = new Buffer([
+        255,
+        85,
+        4,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, dummy]);
+      console.log(buffer);
+      break;
+    }
     case this.sensorTypes.RGBLED: {
       const redValue = new Buffer(2);
       const greenValue = new Buffer(2);
@@ -693,9 +708,9 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         list.writeInt16LE(data.list);
         line.writeInt16LE(data.line);
         col.writeInt16LE(data.col);
-        console.log(data.list);
-        console.log(data.col);
-        console.log(data.line);
+        //  console.log(data.list);
+        //  console.log(data.col);
+        //   console.log(data.line);
       }
       buffer = new Buffer([
         255,
@@ -708,9 +723,9 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       ]);
       buffer = Buffer.concat([buffer, list, col, line, dummy]);
       //console.log(buffer);
-      console.log(list);
-      console.log(col);
-      console.log(line);
+      // console.log(list);
+      // console.log(col);
+      // console.log(line);
 
       break;
     }
