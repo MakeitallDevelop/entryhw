@@ -26,7 +26,7 @@
 #define DIGITAL 1
 #define ANALOG 2
 #define PWM 3
-#define SERVO_PIN 4
+#define SERVO 4
 #define TONE 5
 #define PULSEIN 6
 #define ULTRASONIC 7
@@ -69,13 +69,14 @@ Servo sv;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
 
-SoftwareSerial MP3Module = SoftwareSerial(2, 3);
+
+int tx;
+int rx;
 int vol;
 
 unsigned long previousMillis = 0;
 
 //LedControl lcjikko = LedControl(12, 11, 10, 1);
-DFRobotDFPlayerMini MP3Player;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 dht myDHT11;
@@ -472,23 +473,23 @@ void runSet(int device)
         int g = readBuffer(11);
         int b = readBuffer(13);
 
-        // if (num == 4)
-        // {
-        //     setPortWritable(pin);
-        //     //strip.begin();
-        //     strip.setPixelColor(0, 0, 0, 0);
-        //     strip.setPixelColor(1, 0, 0, 0);
-        //     strip.setPixelColor(2, 0, 0, 0);
-        //     strip.setPixelColor(3, 0, 0, 0);
-        //     strip.show();
-        //     delay(50);
-        //     break;
-        // }
-        // else
-        // {
-        strip.setPixelColor(num, r, g, b);
-        strip.show();
-        // }
+        if (num == 4)
+        {
+            setPortWritable(pin);
+            //strip.begin();
+            strip.setPixelColor(0, 0, 0, 0);
+            strip.setPixelColor(1, 0, 0, 0);
+            strip.setPixelColor(2, 0, 0, 0);
+            strip.setPixelColor(3, 0, 0, 0);
+            strip.show();
+            delay(50);
+            break;
+        }
+        else
+        {
+            strip.setPixelColor(num, r, g, b);
+            strip.show();
+        }
     }
     break;
     case NEOPIXELALL:
@@ -578,25 +579,40 @@ void runSet(int device)
 
     case MP3INIT:
     {
-        int tx = readBuffer(7);
-        int rx = readBuffer(9);
+        tx = readBuffer(7);
+        rx = readBuffer(9);
 
-        MP3Module = SoftwareSerial(rx, tx);
+        //MP3Module = SoftwareSerial(tx, rx);
 
-        MP3Module.begin(9600);
-        MP3Player.begin(MP3Module);
+        //MP3Module.begin(9600);
+        //MP3Player.begin(MP3Module);
         vol = 15;
-        MP3Player.volume(vol);
+        //MP3Player.volume(vol);
     }
     break;
     case MP3PLAY1:
     {
-        int num = readBuffer(9);
-        
+        ///
+        // MP3Module = SoftwareSerial(tx, rx);
+        // MP3Module.begin(9600);
+        // MP3Player.begin(MP3Module);
+        // delay(10);
+        // MP3Player.volume(vol);
+        // delay(10);
+        // ///
+        SoftwareSerial MP3Module = SoftwareSerial(tx, rx); // tx rx
+        DFRobotDFPlayerMini MP3Player;
+        MP3Module.begin(9600);
+        MP3Player.begin(MP3Module);
+
+        MP3Player.volume(vol);
         delay(10);
+        
+        int num = readBuffer(9);
         MP3Player.play(num);
     }
     break;
+    /*
     case MP3PLAY2:
     {
         int num = readBuffer(9);
@@ -605,11 +621,6 @@ void runSet(int device)
         //MP3Player.play(num);
         MP3Player.play(num);
         
-        /*
-        for(int i = 0; i < temp; i++){
-            delay(1000);
-        }
-        */
         //long left = (time_value - temp) * 1000;
 
         unsigned long currentMillis;
@@ -628,16 +639,18 @@ void runSet(int device)
         MP3Player.stop();
     }
     break;
+    */
     case MP3VOL:
     {
         vol = readBuffer(9);
         ///MP3Module.begin(9600);
         //MP3Player.begin(MP3Module);
         //delay(10);
-        MP3Player.volume(vol);
+        //MP3Player.volume(vol);
+        //delay(10);
     }
     break;
-    case SERVO_PIN:
+    case SERVO:
     {
         setPortWritable(pin);
         int v = readBuffer(7);
@@ -737,12 +750,12 @@ void runModule(int device)
         // //String makeLcdString;
 
         int row = readBuffer(7);
-        // if (row == 3)
-        // {
-        //     lcd.init();
-        //     lcd.clear();
-        //     break;
-        // }
+        if (row == 3)
+        {
+            lcd.init();
+            lcd.clear();
+            break;
+        }
         int column = readBuffer(9);
         int len = readBuffer(11);
         String txt = readString(len, 13);

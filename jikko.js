@@ -5,7 +5,7 @@ function Module() {
     DIGITAL: 1,
     ANALOG: 2,
     PWM: 3,
-    SERVO_PIN: 4,
+    SERVO: 4,
     TONE: 5,
     PULSEIN: 6,
     ULTRASONIC: 7,
@@ -430,7 +430,20 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
   const value = new Buffer(2);
   const dummy = new Buffer([10]);
   switch (device) {
-    case this.sensorTypes.SERVO_PIN:
+    case this.sensorTypes.SERVO: {
+      value.writeInt16LE(data);
+      buffer = new Buffer([
+        255,
+        85,
+        6,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, value, dummy]);
+      break;
+    }
     case this.sensorTypes.DIGITAL:
     case this.sensorTypes.PWM: {
       value.writeInt16LE(data);
