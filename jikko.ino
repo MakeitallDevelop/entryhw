@@ -57,6 +57,7 @@
 #define MP3PLAY2 31
 #define MP3VOL 32
 #define RESET_ 33
+//#define PULLUP 34
 
 // State Constant
 #define GET 1
@@ -522,7 +523,19 @@ void runSet(int device)
         //delay(1);
     }
     break;
-
+    /*
+    case PULLUP:
+    {
+        pinMode(pin, INPUT_PULLUP);
+        if(digitalRead(pin) == LOW){
+            digitalWrite(pin, 1);
+        }
+        else if(digitalRead(pin) == HIGH){
+            digitalWrite(pin, 0);
+        }
+    }
+    break;
+    */
     case DOTMATRIXINIT:
     {
         dinPin = readBuffer(7);
