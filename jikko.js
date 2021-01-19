@@ -30,6 +30,10 @@ function Module() {
     DOTMATRIXBRIGHT: 26,
     DOTMATRIX: 27,
     DOTMATRIXCLEAR: 28,
+    MP3INIT: 29,
+    MP3PLAY1: 30,
+    MP3PLAY2: 31,
+    MP3VOL: 32,
     RESET_: 33,
   };
 
@@ -803,25 +807,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       var col = new Buffer(2);
       var textLen = 0;
       var textLenBuf = Buffer(2);
-      // var line = new Buffer(2);
-      // var column = new Buffer(2);
-
-      // var text0 = new Buffer(2);
-      // var text1 = new Buffer(2);
-      // var text2 = new Buffer(2);
-      // var text3 = new Buffer(2);
-      // var text4 = new Buffer(2);
-      // var text5 = new Buffer(2);
-      // var text6 = new Buffer(2);
-      // var text7 = new Buffer(2);
-      // var text8 = new Buffer(2);
-      // var text9 = new Buffer(2);
-      // var text10 = new Buffer(2);
-      // var text11 = new Buffer(2);
-      // var text12 = new Buffer(2);
-      // var text13 = new Buffer(2);
-      // var text14 = new Buffer(2);
-      //var text15 = new Buffer(2);
+      
       if ($.isPlainObject(data)) {
         textLen = ("" + data.text).length;
         // console.log(textLen);
@@ -829,51 +815,14 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         line.writeInt16LE(data.line);
         textLenBuf.writeInt16LE(textLen);
         col.writeInt16LE(data.column);
-        // line.writeInt16LE(data.line);
-        // column.writeInt16LE(data.column);
-
-        // text0.writeInt16LE(data.text0);
-        // text1.writeInt16LE(data.text1);
-        // text2.writeInt16LE(data.text2);
-        // text3.writeInt16LE(data.text3);
-        // text4.writeInt16LE(data.text4);
-        // text5.writeInt16LE(data.text5);
-        // text6.writeInt16LE(data.text6);
-        // text7.writeInt16LE(data.text7);
-        // text8.writeInt16LE(data.text8);
-        // text9.writeInt16LE(data.text9);
-        // text10.writeInt16LE(data.text10);
-        // text11.writeInt16LE(data.text11);
-        // text12.writeInt16LE(data.text12);
-        // text13.writeInt16LE(data.text13);
-        // text14.writeInt16LE(data.text14);
-        // text15.writeInt16LE(data.text15);
       } else {
         textLen = 0;
         text = Buffer.from("", "ascii");
         line.writeInt16LE(0);
         textLenBuf.writeInt16LE(textLen);
         col.writeInt16LE(0);
-        // line.writeInt16LE(0);
-        // column.writeInt16LE(0);
-
-        // text0.writeInt16LE(0);
-        // text1.writeInt16LE(0);
-        // text2.writeInt16LE(0);
-        // text3.writeInt16LE(0);
-        // text4.writeInt16LE(0);
-        // text5.writeInt16LE(0);
-        // text6.writeInt16LE(0);
-        // text7.writeInt16LE(0);
-        // text8.writeInt16LE(0);
-        // text9.writeInt16LE(0);
-        // text10.writeInt16LE(0);
-        // text11.writeInt16LE(0);
-        // text12.writeInt16LE(0);
-        // text13.writeInt16LE(0);
-        // text14.writeInt16LE(0);
-        // text15.writeInt16LE(0);
       }
+
       buffer = new Buffer([
         255,
         85,
@@ -885,30 +834,109 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       ]);
 
       buffer = Buffer.concat([buffer, line, col, textLenBuf, text, dummy]);
-      // console.log(buffer);
-      // buffer = new Buffer([255, 85, 36, sensorIdx, this.actionTypes.MODUEL, device, port]);
-      // buffer = Buffer.concat([
-      //     buffer,
-      //     line,
-      //     column,
-      //     text0,
-      //     text1,
-      //     text2,
-      //     text3,
-      //     text4,
-      //     text5,
-      //     text6,
-      //     text7,
-      //     text8,
-      //     text9,
-      //     text10,
-      //     text11,
-      //     text12,
-      //     text13,
-      //     text14,
-      //     text15,
-      //     dummy,
-      // ]);
+      break;
+    }
+    case this.sensorTypes.MP3INIT: {
+      const tx = new Buffer(2);
+      const rx = new Buffer(2);
+
+      if ($.isPlainObject(data)) {
+        tx.writeInt16LE(data.tx);
+        rx.writeInt16LE(data.rx);
+      } else {
+        tx.writeInt16LE(0);
+        rx.writeInt16LE(0);
+      }
+
+      buffer = new Buffer([
+        255,
+        85,
+        8,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+
+      buffer = Buffer.concat([buffer, tx, rx, dummy]);
+      break;
+    }
+    case this.sensorTypes.MP3PLAY1: {
+      const tx = new Buffer(2);
+      const num = new Buffer(2);
+
+      if ($.isPlainObject(data)) {
+        tx.writeInt16LE(data.tx);
+        num.writeInt16LE(data.num);
+      } else {
+        tx.writeInt16LE(0);
+        num.writeInt16LE(0);
+      }
+
+      buffer = new Buffer([
+        255,
+        85,
+        8,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+
+      buffer = Buffer.concat([buffer, tx, num, dummy]);
+      break;
+    }
+    case this.sensorTypes.MP3PLAY2: {
+      const tx = new Buffer(2);
+      const num = new Buffer(2);
+      const time_value = new Buffer(2);
+
+      if ($.isPlainObject(data)) {
+        tx.writeInt16LE(data.tx);
+        num.writeInt16LE(data.num);
+        time_value.writeInt16LE(data.time_value);
+      } else {
+        tx.writeInt16LE(0);
+        num.writeInt16LE(0);
+        time_value.writeInt16LE(0);
+      }
+
+      buffer = new Buffer([
+        255,
+        85,
+        10,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+
+      buffer = Buffer.concat([buffer, tx, num, time_value, dummy]);
+      break;
+    }
+    case this.sensorTypes.MP3VOL: {
+      const tx = new Buffer(2);
+      const vol = new Buffer(2);
+
+      if ($.isPlainObject(data)) {
+        tx.writeInt16LE(data.tx);
+        vol.writeInt16LE(data.vol);
+      } else {
+        tx.writeInt16LE(0);
+        vol.writeInt16LE(0);
+      }
+
+      buffer = new Buffer([
+        255,
+        85,
+        8,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+
+      buffer = Buffer.concat([buffer, tx, vol, dummy]);
       break;
     }
     case this.sensorTypes.OLED: {
