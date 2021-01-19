@@ -339,7 +339,36 @@ Module.prototype.handleLocalData = function (data) {
 Module.prototype.makeSensorReadBuffer = function (device, port, data) {
   let buffer;
   const dummy = new Buffer([10]);
-  if (device == this.sensorTypes.ULTRASONIC) {
+  if (device == this.sensorTypes.DIGITAL) {
+    //data 2: pull up, 0: normal
+    if (!data) {
+      buffer = new Buffer([
+        255,
+        85,
+        6,
+        sensorIdx,
+        this.actionTypes.GET,
+        device,
+        port,
+        0,
+        10,
+      ]);
+    } else {
+      //pullup인 경우
+      buffer = new Buffer([
+        255,
+        85,
+        6,
+        sensorIdx,
+        this.actionTypes.GET,
+        device,
+        port,
+        data,
+        10,
+      ]);
+    }
+    console.log(buffer);
+  } else if (device == this.sensorTypes.ULTRASONIC) {
     buffer = new Buffer([
       255,
       85,
@@ -856,7 +885,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       ]);
 
       buffer = Buffer.concat([buffer, line, col, textLenBuf, text, dummy]);
-      console.log(buffer);
+      // console.log(buffer);
       // buffer = new Buffer([255, 85, 36, sensorIdx, this.actionTypes.MODUEL, device, port]);
       // buffer = Buffer.concat([
       //     buffer,

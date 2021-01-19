@@ -70,7 +70,6 @@ Servo sv;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
 
-
 int tx;
 int rx;
 int vol;
@@ -272,7 +271,11 @@ void parseData()
     {
     case GET:
     {
-        if (device == ULTRASONIC)
+        if (device == DIGITAL)
+        {
+            digitals[port] = readBuffer(7);
+        }
+        else if (device == ULTRASONIC)
         {
             if (!isUltrasonic)
             {
@@ -620,7 +623,7 @@ void runSet(int device)
 
         MP3Player.volume(vol);
         delay(10);
-        
+
         int num = readBuffer(9);
         MP3Player.play(num);
     }
@@ -839,7 +842,7 @@ void sendPinValues()
     int pinNumber = 0;
     for (pinNumber = 4; pinNumber < 14; pinNumber++)
     {
-        if (digitals[pinNumber] == 0)
+        if (digitals[pinNumber] == 0 || digitals[pinNumber] == 2)
         {
             sendDigitalValue(pinNumber);
             callOK();
@@ -962,7 +965,15 @@ void sendBluetooth()
 
 void sendDigitalValue(int pinNumber)
 {
-    pinMode(pinNumber, INPUT);
+    if (digitals[pinNumber] == 0)
+    {
+        pinMode(pinNumber, INPUT);
+    }
+    else if (digitals[pinNumber] == 2)
+    {
+        pinMode(pinNumber, INPUT_PULLUP);
+    }
+    // pinMode(pinNumber, INPUT);
     writeHead();
     sendFloat(digitalRead(pinNumber));
     writeSerial(pinNumber);
