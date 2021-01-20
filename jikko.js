@@ -254,8 +254,8 @@ Module.prototype.requestLocalData = function () {
 };
 
 /*
-  ff 55 idx size data a
-  */
+ff 55 idx size data a
+*/
 Module.prototype.handleLocalData = function (data) {
   const self = this;
   const datas = this.getDataByBuffer(data);
@@ -336,9 +336,9 @@ Module.prototype.handleLocalData = function (data) {
 };
 
 /*
-  ff 55 len idx action device port  slot  data a
-  0  1  2   3   4      5      6     7     8
-  */
+ff 55 len idx action device port  slot  data a
+0  1  2   3   4      5      6     7     8
+*/
 
 Module.prototype.makeSensorReadBuffer = function (device, port, data) {
   let buffer;
@@ -807,7 +807,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       var col = new Buffer(2);
       var textLen = 0;
       var textLenBuf = Buffer(2);
-      
+
       if ($.isPlainObject(data)) {
         textLen = ("" + data.text).length;
         // console.log(textLen);

@@ -570,126 +570,135 @@ void runSet(int device)
         int len = readBuffer(7);
         String txt = readString(len, 9);
         String row;
-        
+
         ////////////////////////////////////////////////////////////////
 
         LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
         lcjikko->shutdown(0, false);
         lcjikko->setIntensity(0, dotBright);
 
-        for (int temp = 15; temp > 0; temp -= 2){
-            switch(txt.charAt(temp - 1)){
-                case '0':
-                    row = "0000";
-                    break;
-                case '1':
-                    row = "0001";
-                    break;
-                case '2':
-                    row = "0010";
-                    break;
-                case '3':
-                    row = "0011";
-                    break;
-                case '4':
-                    row = "0100";
-                    break;
-                case '5':
-                    row = "0101";
-                    break;
-                case '6':
-                    row = "0110";
-                    break;
-                case '7':
-                    row = "0111";
-                    break;
-                case '8':
-                    row = "1000";
-                    break;
-                case '9':
-                    row = "1001";
-                    break;
-                case 'a':
-                    row = "1010";
-                    break;
-                case 'b':
-                    row = "1011";
-                    break;
-                case 'c':
-                    row = "1100";
-                    break;
-                case 'd':
-                    row = "1101";
-                    break;
-                case 'e':
-                    row = "1111";
-                    break;
+        for (int temp = 15; temp > 0; temp -= 2)
+        {
+            switch (txt.charAt(temp - 1))
+            {
+            case '0':
+                row = "0000";
+                break;
+            case '1':
+                row = "0001";
+                break;
+            case '2':
+                row = "0010";
+                break;
+            case '3':
+                row = "0011";
+                break;
+            case '4':
+                row = "0100";
+                break;
+            case '5':
+                row = "0101";
+                break;
+            case '6':
+                row = "0110";
+                break;
+            case '7':
+                row = "0111";
+                break;
+            case '8':
+                row = "1000";
+                break;
+            case '9':
+                row = "1001";
+                break;
+            case 'a':
+                row = "1010";
+                break;
+            case 'b':
+                row = "1011";
+                break;
+            case 'c':
+                row = "1100";
+                break;
+            case 'd':
+                row = "1101";
+                break;
+            case 'e':
+                row = "1111";
+                break;
             }
-            for(int col = 0; col < 4; col++){
-                if(row.charAt(col) == '1'){
-                    lcjikko->setLed(0, 7 - (temp - 1) / 2 ,col, true);
+            for (int col = 0; col < 4; col++)
+            {
+                if (row.charAt(col) == '1')
+                {
+                    lcjikko->setLed(0, 7 - (temp - 1) / 2, col, true);
                 }
-                else{
+                else
+                {
                     lcjikko->setLed(0, 7 - (temp - 1) / 2, col, false);
                 }
             }
-            switch(txt.charAt(temp)){
-                case '0':
-                    row = "0000";
-                    break;
-                case '1':
-                    row = "0001";
-                    break;
-                case '2':
-                    row = "0010";
-                    break;
-                case '3':
-                    row = "0011";
-                    break;
-                case '4':
-                    row = "0100";
-                    break;
-                case '5':
-                    row = "0101";
-                    break;
-                case '6':
-                    row = "0110";
-                    break;
-                case '7':
-                    row = "0111";
-                    break;
-                case '8':
-                    row = "1000";
-                    break;
-                case '9':
-                    row = "1001";
-                    break;
-                case 'a':
-                    row = "1010";
-                    break;
-                case 'b':
-                    row = "1011";
-                    break;
-                case 'c':
-                    row = "1100";
-                    break;
-                case 'd':
-                    row = "1101";
-                    break;
-                case 'e':
-                    row = "1111";
-                    break;
+            switch (txt.charAt(temp))
+            {
+            case '0':
+                row = "0000";
+                break;
+            case '1':
+                row = "0001";
+                break;
+            case '2':
+                row = "0010";
+                break;
+            case '3':
+                row = "0011";
+                break;
+            case '4':
+                row = "0100";
+                break;
+            case '5':
+                row = "0101";
+                break;
+            case '6':
+                row = "0110";
+                break;
+            case '7':
+                row = "0111";
+                break;
+            case '8':
+                row = "1000";
+                break;
+            case '9':
+                row = "1001";
+                break;
+            case 'a':
+                row = "1010";
+                break;
+            case 'b':
+                row = "1011";
+                break;
+            case 'c':
+                row = "1100";
+                break;
+            case 'd':
+                row = "1101";
+                break;
+            case 'e':
+                row = "1111";
+                break;
             }
-            for(int col = 0; col < 4; col++){
-                if(row.charAt(col) == '1'){
-                    lcjikko->setLed(0, 7 - (temp - 1) / 2 ,col + 4, true);
+            for (int col = 0; col < 4; col++)
+            {
+                if (row.charAt(col) == '1')
+                {
+                    lcjikko->setLed(0, 7 - (temp - 1) / 2, col + 4, true);
                 }
-                else{
+                else
+                {
                     lcjikko->setLed(0, 7 - (temp - 1) / 2, col + 4, false);
                 }
             }
         }
-    
+
         delete lcjikko;
     }
     break;
@@ -729,34 +738,43 @@ void runSet(int device)
         MP3Player.play(num);
     }
     break;
-    /*
+
     case MP3PLAY2:
     {
         int num = readBuffer(9);
         int time_value = readBuffer(11);
-        
+        SoftwareSerial MP3Module = SoftwareSerial(tx, rx); // tx rx
+        DFRobotDFPlayerMini MP3Player;
+        MP3Module.begin(9600);
+        MP3Player.begin(MP3Module);
+        static unsigned long timer = millis();
+
+        //MP #Player.setTimeOut(3000); //Set serial communictaion time out 500ms
+
+        MP3Player.volume(vol);
+        delay(10);
         //MP3Player.play(num);
         MP3Player.play(num);
-        
-        //long left = (time_value - temp) * 1000;
-
-        unsigned long currentMillis;
-        previousMillis = millis();
-
-        while(time_value != 0){
-            currentMillis = millis();
-            
-            if(currentMillis - previousMillis > 1000){
-                previousMillis = currentMillis;
-                time_value--;
-                //MP3Player.stop();
-                //break;
-            }
-        }
-        MP3Player.stop();
+        // delay(900);
+        // delay(900);
     }
+    //long left = (time_value - temp) * 1000;
+
+    //     static unsigned timer = millis();
+    //     // unsigned long currentMillis;
+    //     // previousMillis = millis();
+    //     while (1)
+    //     {
+    //         if (millis() - timer > 3000)
+    //         {
+    //             timer = millis();
+    //             MP3Player.stop();
+    //             break;
+    //         }
+    //     }
+    // }
     break;
-    */
+
     case MP3VOL:
     {
         vol = readBuffer(9);
