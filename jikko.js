@@ -29,12 +29,13 @@ function Module() {
     DOTMATRIXINIT: 25,
     DOTMATRIXBRIGHT: 26,
     DOTMATRIX: 27,
-    DOTMATRIXCLEAR: 28,
-    MP3INIT: 29,
-    MP3PLAY1: 30,
-    MP3PLAY2: 31,
-    MP3VOL: 32,
-    RESET_: 33,
+    DOTMATRIXEMOJI: 28,
+    DOTMATRIXCLEAR: 29,
+    MP3INIT: 30,
+    MP3PLAY1: 31,
+    MP3PLAY2: 32,
+    MP3VOL: 33,
+    RESET_: 34,
   };
 
   this.actionTypes = {
@@ -502,31 +503,6 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       // console.log(buffer);
       break;
     }
-    case this.sensorTypes.RGBLED: {
-      const redValue = new Buffer(2);
-      const greenValue = new Buffer(2);
-      const blueValue = new Buffer(2);
-      if ($.isPlainObject(data)) {
-        redValue.writeInt16LE(data.redValue);
-        greenValue.writeInt16LE(data.greenValue);
-        blueValue.writeInt16LE(data.blueValue);
-      } else {
-        redValue.writeInt16LE(0);
-        greenValue.writeInt16LE(0);
-        blueValue.writeInt16LE(0);
-      }
-      buffer = new Buffer([
-        255,
-        85,
-        10,
-        sensorIdx,
-        this.actionTypes.SET,
-        device,
-        port,
-      ]);
-      buffer = Buffer.concat([buffer, redValue, greenValue, blueValue, dummy]);
-      break;
-    }
     case this.sensorTypes.TONE: {
       const time = new Buffer(2);
       if ($.isPlainObject(data)) {
@@ -744,6 +720,20 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       buffer = Buffer.concat([buffer, textLenBuf, text, dummy]);
       // console.log(textLen);
       //console.log(buffer);
+      break;
+    }
+    case this.sensorTypes.DOTMATRIXEMOJI: {
+      value.writeInt16LE(data);
+      buffer = new Buffer([
+        255,
+        85,
+        6,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, value, dummy]);
       break;
     }
     case this.sensorTypes.DOTMATRIXCLEAR: {

@@ -10,7 +10,6 @@
    Copyright (C) 2013 - 2016 Maker Works Technology Co., Ltd. All right reserved.
  **********************************************************************************/
 
-//#include <DHT.h>
 #include <dht.h>
 #include <Servo.h> //헤더 호출
 #include <LiquidCrystal_I2C.h>
@@ -18,8 +17,6 @@
 #include <Adafruit_NeoPixel.h>
 #include <LedControl.h>
 #include <DFRobotDFPlayerMini.h>
-
-//#include "U8glib.h"
 
 // Module Constant //핀설정
 #define ALIVE 0
@@ -35,7 +32,7 @@
 #define WRITE_BLUETOOTH 10
 #define LCD 11
 #define LCDCLEAR 12
-#define RGBLED 13
+//#define RGBLED 13
 #define DCMOTOR 14
 #define OLED 15
 #define PIR 16
@@ -51,13 +48,13 @@
 #define DOTMATRIXINIT 25
 #define DOTMATRIXBRIGHT 26
 #define DOTMATRIX 27
-#define DOTMATRIXCLEAR 28
-#define MP3INIT 29
-#define MP3PLAY1 30
-#define MP3PLAY2 31
-#define MP3VOL 32
-#define RESET_ 33
-//#define PULLUP 34
+#define DOTMATRIXEMOJI 28
+#define DOTMATRIXCLEAR 29
+#define MP3INIT 30
+#define MP3PLAY1 31
+#define MP3PLAY2 32
+#define MP3VOL 33
+#define RESET_ 34
 
 // State Constant
 #define GET 1
@@ -555,14 +552,7 @@ void runSet(int device)
     break;
     case DOTMATRIXBRIGHT:
     {
-        // setPortWritable(pin);
         dotBright = readBuffer(7);
-        // lcjikko.setIntensity(0, bright);
-
-        // lcd.setCursor(0, 0);
-        // lcd.print(pin);
-        // lcd.setCursor(0, 1);
-        // lcd.print(bright);
     }
     break;
     case DOTMATRIX:
@@ -702,30 +692,90 @@ void runSet(int device)
         delete lcjikko;
     }
     break;
+    case DOTMATRIXEMOJI:
+    {
+        int list = readBuffer(7);
+        
+        LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
+        lcjikko->shutdown(0, false);
+        lcjikko->setIntensity(0, dotBright);
+        
+        switch(list){
+            case 1:
+                lcjikko->setRow(0, 0, B01100110);
+                lcjikko->setRow(0, 1, B11111111);
+                lcjikko->setRow(0, 2, B11111111);
+                lcjikko->setRow(0, 3, B11111111);
+                lcjikko->setRow(0, 4, B01111110);
+                lcjikko->setRow(0, 5, B00111100);
+                lcjikko->setRow(0, 6, B00011000);
+                lcjikko->setRow(0, 7, B01100110);
+                break;
+            case 2:
+                lcjikko->setRow(0, 0, B01100110);
+                lcjikko->setRow(0, 1, B10011001);
+                lcjikko->setRow(0, 2, B10000001);
+                lcjikko->setRow(0, 3, B10000001);
+                lcjikko->setRow(0, 4, B01000010);
+                lcjikko->setRow(0, 5, B00100100);
+                lcjikko->setRow(0, 6, B00011000);
+                lcjikko->setRow(0, 7, B00000000);
+                break;    
+            case 3:
+                lcjikko->setRow(0, 0, B00000000);
+                lcjikko->setRow(0, 1, B00010000);
+                lcjikko->setRow(0, 2, B00111000);
+                lcjikko->setRow(0, 3, B01010100);
+                lcjikko->setRow(0, 4, B00010000);
+                lcjikko->setRow(0, 5, B00010000);
+                lcjikko->setRow(0, 6, B00010000);
+                lcjikko->setRow(0, 7, B00000000);
+                break;    
+            case 4:
+                lcjikko->setRow(0, 0, B00000000);
+                lcjikko->setRow(0, 1, B00010000);
+                lcjikko->setRow(0, 2, B00010000);
+                lcjikko->setRow(0, 3, B00010000);
+                lcjikko->setRow(0, 4, B01010100);
+                lcjikko->setRow(0, 5, B00111000);
+                lcjikko->setRow(0, 6, B00010000);
+                lcjikko->setRow(0, 7, B00000000);
+                break;
+            case 5:
+                lcjikko->setRow(0, 0, B00000000);
+                lcjikko->setRow(0, 1, B00010000);
+                lcjikko->setRow(0, 2, B00100000);
+                lcjikko->setRow(0, 3, B01111110);
+                lcjikko->setRow(0, 4, B00100000);
+                lcjikko->setRow(0, 5, B00010000);
+                lcjikko->setRow(0, 6, B00000000);
+                lcjikko->setRow(0, 7, B00000000);
+                break;
+            case 6:
+                lcjikko->setRow(0, 0, B00000000);
+                lcjikko->setRow(0, 1, B00001000);
+                lcjikko->setRow(0, 2, B00000100);
+                lcjikko->setRow(0, 3, B01111110);
+                lcjikko->setRow(0, 4, B00000100);
+                lcjikko->setRow(0, 5, B00001000);
+                lcjikko->setRow(0, 6, B00000000);
+                lcjikko->setRow(0, 7, B00000000);
+                break;
+                
+        }
+        delete lcjikko;
+    }
+    break;
 
     case MP3INIT:
     {
         tx = readBuffer(7);
         rx = readBuffer(9);
-
-        //MP3Module = SoftwareSerial(tx, rx);
-
-        //MP3Module.begin(9600);
-        //MP3Player.begin(MP3Module);
         vol = 15;
-        //MP3Player.volume(vol);
     }
     break;
     case MP3PLAY1:
     {
-        ///
-        // MP3Module = SoftwareSerial(tx, rx);
-        // MP3Module.begin(9600);
-        // MP3Player.begin(MP3Module);
-        // delay(10);
-        // MP3Player.volume(vol);
-        // delay(10);
-        // ///
         SoftwareSerial MP3Module = SoftwareSerial(tx, rx); // tx rx
         DFRobotDFPlayerMini MP3Player;
         MP3Module.begin(9600);
@@ -747,42 +797,16 @@ void runSet(int device)
         DFRobotDFPlayerMini MP3Player;
         MP3Module.begin(9600);
         MP3Player.begin(MP3Module);
-        static unsigned long timer = millis();
-
-        //MP #Player.setTimeOut(3000); //Set serial communictaion time out 500ms
 
         MP3Player.volume(vol);
         delay(10);
-        //MP3Player.play(num);
         MP3Player.play(num);
-        // delay(900);
-        // delay(900);
     }
-    //long left = (time_value - temp) * 1000;
-
-    //     static unsigned timer = millis();
-    //     // unsigned long currentMillis;
-    //     // previousMillis = millis();
-    //     while (1)
-    //     {
-    //         if (millis() - timer > 3000)
-    //         {
-    //             timer = millis();
-    //             MP3Player.stop();
-    //             break;
-    //         }
-    //     }
-    // }
     break;
 
     case MP3VOL:
     {
         vol = readBuffer(9);
-        ///MP3Module.begin(9600);
-        //MP3Player.begin(MP3Module);
-        //delay(10);
-        //MP3Player.volume(vol);
-        //delay(10);
     }
     break;
     case SERVO:
@@ -791,40 +815,15 @@ void runSet(int device)
         int v = readBuffer(7);
         if (v >= 0 && v <= 180)
         {
-            //byte rg[] = {TCCR1A, TCCR1B, OCR1A, TIMSK1};
-            //delay(5);
             sv = servos[searchServoPin(pin)];
             sv.attach(pin);
             sv.write(v);
-            //delay(100);
-            //sv.detach();
-            //TCCR1A = rg[0];
-            //TCCR1B = rg[1];
-            //TIMSK1 = rg[3];
-            //OCR1A = rg[2];
         }
     }
     break;
     case TIMER:
     {
         lastTime = millis() / 1000.0;
-    }
-    break;
-    case RGBLED:
-    {
-        // 지정된 색깔을 제대로 표현하기 위해 강제로 3회 반복 함
-        //if (pin == 3 || pin == 8 || pin == 9) rgbLedVer2(pin);
-        //else
-        rgbLedVer1(pin);
-        delay(10);
-        //if (pin == 3 || pin == 8 || pin == 9) rgbLedVer2(pin);
-        //else
-        rgbLedVer1(pin);
-        delay(10);
-        //if (pin == 3 || pin == 8 || pin == 9) rgbLedVer2(pin);
-        // else
-        rgbLedVer1(pin);
-        delay(10);
     }
     break;
     case DCMOTOR:
@@ -879,11 +878,6 @@ void runModule(int device)
     break;
     case LCD:
     {
-        //  lcd.clear();
-        // int line = readBuffer(7);
-        // int col = readBuffer(9);
-        // //String makeLcdString;
-
         int row = readBuffer(7);
         if (row == 3)
         {
@@ -894,51 +888,11 @@ void runModule(int device)
         int column = readBuffer(9);
         int len = readBuffer(11);
         String txt = readString(len, 13);
-        // int arrayNum = 11;
-        // lcd.setCursor(col, line);
-        // for (int i = 0; i < 17; i++)
-        // {
-        //     char lcdRead = readBuffer(arrayNum);
-        //     if (lcdRead > 0)
-        //         makeLcdString += lcdRead;
-        //     arrayNum += 2;
-        // }
-        // lcd.print(makeLcdString);
 
         lcd.setCursor(column, row);
         lcd.print(txt);
     }
     break;
-        //    case OLED: {
-        //        int x = readBuffer(7);
-        //        int y = readBuffer(9);
-        //        String makeOledString;
-        //        int arrayNum = 11;
-        //        for (int i = 0; i < 17; i++) {
-        //          char oledRead = readBuffer(arrayNum);
-        //          if (oledRead > 0) makeOledString += oledRead;
-        //          arrayNum += 2;
-        //        }
-        //
-        //        if (readBuffer(11) == 1) {
-        //          int oledInt = readShort(13);
-        //          oled.firstPage();
-        //          do {
-        //            oled.setFont(u8g_font_unifont);
-        //            oled.setPrintPos(x, y);
-        //            oled.print(oledInt);
-        //          } while (oled.nextPage());
-        //        }
-        //        else {
-        //          oled.firstPage();
-        //          do {
-        //            oled.setFont(u8g_font_unifont);
-        //            oled.setPrintPos(x, y);
-        //            oled.print(makeOledString);
-        //          } while (oled.nextPage());
-        //        }
-        //      }
-        //      break;
     case WRITE_BLUETOOTH:
     {
         char softSerialTemp[32];
@@ -1250,276 +1204,4 @@ void callDebug(char c)
     writeSerial(0x55);
     writeSerial(c);
     writeEnd();
-}
-
-void rgbLedVer1(int pin)
-{
-    cli();
-    byte color[3] = {0};
-    byte colorBuff[3][8] = {0};
-    setPortWritable(pin);
-    color[0] = readBuffer(9);  // green
-    color[1] = readBuffer(7);  // red
-    color[2] = readBuffer(11); // blue
-
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 7; j >= 0; j--)
-        {
-            colorBuff[i][j] = (color[i] >> j) & 0x01;
-        }
-    }
-    if (2 <= pin && pin <= 7)
-    {
-        if (pin == 3)
-            PORTD &= ~B00001000;
-        else if (pin == 4)
-            PORTD &= ~B00010000;
-        else if (pin == 5)
-            PORTD &= ~B00100000;
-        else if (pin == 6)
-            PORTD &= ~B01000000;
-        else if (pin == 7)
-            PORTD &= ~B10000000;
-        for (register unsigned char i = 0; i < 85; i++) // 80 us
-        {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-        }
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 7; j >= 0; j--)
-            {
-                if (colorBuff[i][j] == 1)
-                {
-                    if (pin == 3)
-                        PORTD |= B00001000;
-                    else if (pin == 4)
-                        PORTD |= B00010000;
-                    else if (pin == 5)
-                        PORTD |= B00100000;
-                    else if (pin == 6)
-                        PORTD |= B01000000;
-                    else if (pin == 7)
-                        PORTD |= B10000000;
-                    for (register unsigned char i = 0; i < 26; i++) // 25 us
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                    if (pin == 3)
-                        PORTD &= ~B00001000;
-                    else if (pin == 4)
-                        PORTD &= ~B00010000;
-                    else if (pin == 5)
-                        PORTD &= ~B00100000;
-                    else if (pin == 6)
-                        PORTD &= ~B01000000;
-                    else if (pin == 7)
-                        PORTD &= ~B10000000;
-                    for (register unsigned char i = 0; i < 25; i++) // 25 us
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                }
-                else
-                {
-                    if (pin == 3)
-                        PORTD |= B00001000;
-                    else if (pin == 4)
-                        PORTD |= B00010000;
-                    else if (pin == 5)
-                        PORTD |= B00100000;
-                    else if (pin == 6)
-                        PORTD |= B01000000;
-                    else if (pin == 7)
-                        PORTD |= B10000000;
-                    for (register unsigned char i = 0; i < 15; i++) // 15 us
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                    if (pin == 3)
-                        PORTD &= ~B00001000;
-                    else if (pin == 4)
-                        PORTD &= ~B00010000;
-                    else if (pin == 5)
-                        PORTD &= ~B00100000;
-                    else if (pin == 6)
-                        PORTD &= ~B01000000;
-                    else if (pin == 7)
-                        PORTD &= ~B10000000;
-                    for (register unsigned char i = 0; i < 14; i++) // 15 us
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                }
-            }
-        }
-        if (pin == 3)
-            PORTD |= B00001000;
-        else if (pin == 4)
-            PORTD |= B00010000;
-        else if (pin == 5)
-            PORTD |= B00100000;
-        else if (pin == 6)
-            PORTD |= B01000000;
-        else if (pin == 7)
-            PORTD |= B10000000;
-    } // if(2 <= pin && pin <= 7)
-    else if (8 <= pin && pin <= 13)
-    {
-        if (pin == 8)
-            PORTB &= ~B00000001;
-        else if (pin == 9)
-            PORTB &= ~B00000010;
-        else if (pin == 10)
-            PORTB &= ~B00000100;
-        else if (pin == 11)
-            PORTB &= ~B00001000;
-        else if (pin == 12)
-            PORTB &= ~B00010000;
-        else if (pin == 13)
-            PORTB &= ~B00100000;
-        for (register unsigned char i = 0; i < 85; i++)
-        {
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-            asm volatile(" PUSH R0 ");
-            asm volatile(" POP R0 ");
-        }
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 7; j >= 0; j--)
-            {
-                if (colorBuff[i][j] == 1)
-                {
-                    if (pin == 8)
-                        PORTB |= B00000001;
-                    else if (pin == 9)
-                        PORTB |= B00000010;
-                    else if (pin == 10)
-                        PORTB |= B00000100;
-                    else if (pin == 11)
-                        PORTB |= B00001000;
-                    else if (pin == 12)
-                        PORTB |= B00010000;
-                    else if (pin == 13)
-                        PORTB |= B00100000;
-                    for (register unsigned char i = 0; i < 26; i++)
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                    if (pin == 8)
-                        PORTB &= ~B00000001;
-                    else if (pin == 9)
-                        PORTB &= ~B00000010;
-                    else if (pin == 10)
-                        PORTB &= ~B00000100;
-                    else if (pin == 11)
-                        PORTB &= ~B00001000;
-                    else if (pin == 12)
-                        PORTB &= ~B00010000;
-                    else if (pin == 13)
-                        PORTB &= ~B00100000;
-                    for (register unsigned char i = 0; i < 25; i++)
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                }
-                else
-                {
-                    if (pin == 8)
-                        PORTB |= B00000001;
-                    else if (pin == 9)
-                        PORTB |= B00000010;
-                    else if (pin == 10)
-                        PORTB |= B00000100;
-                    else if (pin == 11)
-                        PORTB |= B00001000;
-                    else if (pin == 12)
-                        PORTB |= B00010000;
-                    else if (pin == 13)
-                        PORTB |= B00100000;
-                    for (register unsigned char i = 0; i < 15; i++)
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                    if (pin == 8)
-                        PORTB &= ~B00000001;
-                    else if (pin == 9)
-                        PORTB &= ~B00000010;
-                    else if (pin == 10)
-                        PORTB &= ~B00000100;
-                    else if (pin == 11)
-                        PORTB &= ~B00001000;
-                    else if (pin == 12)
-                        PORTB &= ~B00010000;
-                    else if (pin == 13)
-                        PORTB &= ~B00100000;
-                    for (register unsigned char i = 0; i < 14; i++)
-                    {
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                        asm volatile(" PUSH R0 ");
-                        asm volatile(" POP R0 ");
-                    }
-                }
-            }
-        }
-        if (pin == 8)
-            PORTB |= B00000001;
-        else if (pin == 9)
-            PORTB |= B00000010;
-        else if (pin == 10)
-            PORTB |= B00000100;
-        else if (pin == 11)
-            PORTB |= B00001000;
-        else if (pin == 12)
-            PORTB |= B00010000;
-        else if (pin == 13)
-            PORTB |= B00100000;
-    } // if(8 <= pin && pin <= 13)
-    sei();
 }
