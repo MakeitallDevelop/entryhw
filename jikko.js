@@ -35,12 +35,12 @@ function Module() {
     MP3PLAY1: 31,
     MP3PLAY2: 32,
     MP3VOL: 33,
-    RESET_: 34,
   };
 
   this.actionTypes = {
     GET: 1,
     SET: 2,
+
     MODUEL: 3,
     RESET: 4,
   };
@@ -267,6 +267,7 @@ Module.prototype.handleLocalData = function (data) {
     }
     const readData = data.subarray(2, data.length);
     let value;
+
     switch (readData[0]) {
       case self.sensorValueSize.FLOAT: {
         value = new Buffer(readData.subarray(1, 5)).readFloatLE();
@@ -291,14 +292,16 @@ Module.prototype.handleLocalData = function (data) {
 
     const type = readData[readData.length - 1];
     const port = readData[readData.length - 2];
-
     switch (type) {
       case self.sensorTypes.DIGITAL: {
         self.sensorData.DIGITAL[port] = value;
+        // console.log(value);
         break;
       }
       case self.sensorTypes.ANALOG: {
         self.sensorData.ANALOG[port] = value;
+        // console.log('ANALOG');
+        // console.log(value);
         break;
       }
       case self.sensorTypes.PULSEIN: {
@@ -307,7 +310,7 @@ Module.prototype.handleLocalData = function (data) {
       }
       case self.sensorTypes.DHTTEMP: {
         self.sensorData.DHTTEMP = value;
-        //console.log('TEMP');
+        // console.log('TEMP');
         // console.log(value);
         break;
       }
@@ -319,6 +322,8 @@ Module.prototype.handleLocalData = function (data) {
       }
       case self.sensorTypes.ULTRASONIC: {
         self.sensorData.ULTRASONIC = value;
+        // console.log('ULTRA');
+        // console.log(value);
         break;
       }
       case self.sensorTypes.TIMER: {
@@ -385,6 +390,8 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       port[1],
       10,
     ]);
+
+    console.log(buffer);
   } else if (device == this.sensorTypes.DHTTEMP) {
     buffer = new Buffer([
       255,
@@ -489,20 +496,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       buffer = Buffer.concat([buffer, value, dummy]);
       break;
     }
-    case this.sensorTypes.RESET_: {
-      buffer = new Buffer([
-        255,
-        85,
-        4,
-        sensorIdx,
-        this.actionTypes.SET,
-        device,
-        port,
-      ]);
-      buffer = Buffer.concat([buffer, dummy]);
-      // console.log(buffer);
-      break;
-    }
+
     case this.sensorTypes.TONE: {
       const time = new Buffer(2);
       if ($.isPlainObject(data)) {
@@ -1052,5 +1046,7 @@ Module.prototype.reset = function () {
 
   this.sensorData.PULSEIN = {};
 };
+
+Module.prototype.lostController = function (self, cb) {};
 
 module.exports = new Module();
