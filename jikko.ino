@@ -1015,6 +1015,12 @@ void sendUltrasonic()
         pinMode(echoPin, OUTPUT);
         digitalWrite(echoPin, LOW);
         pinMode(echoPin, INPUT);
+
+        digitalWrite(trigPin, LOW);
+        delayMicroseconds(2);
+        digitalWrite(trigPin, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(trigPin, LOW);
     }
     value = (float)pulseIn(echoPin, HIGH)/29/2;
 
