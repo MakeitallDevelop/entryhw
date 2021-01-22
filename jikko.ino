@@ -1011,6 +1011,14 @@ void sendUltrasonic()
 
     float value;
 
+    while(digitalRead(echoPin) != LOW){
+        pinMode(echoPin, OUTPUT);
+        digitalWrite(echoPin, LOW);
+        pinMode(echoPin, INPUT);
+    }
+    value = (float)pulseIn(echoPin, HIGH)/29/2;
+
+    /*    
     if(digitalRead(echoPin) == LOW){
         value = (float)pulseIn(echoPin, HIGH)/29/2;
     }
@@ -1019,6 +1027,7 @@ void sendUltrasonic()
         digitalWrite(echoPin, LOW);
         pinMode(echoPin, INPUT);
     }
+    */
     //float value = pulseIn(echoPin, HIGH, 30000) / 29.0 / 2.0;
 
     
