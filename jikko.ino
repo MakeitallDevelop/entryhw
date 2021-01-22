@@ -1009,8 +1009,19 @@ void sendUltrasonic()
     delayMicroseconds(10);
     digitalWrite(trigPin, LOW);
 
-    float value = pulseIn(echoPin, HIGH, 30000) / 29.0 / 2.0;
+    float value;
 
+    if(digitalRead(echoPin) == LOW){
+        value = (float)pulseIn(echoPin, HIGH)/29/2;
+    }
+    else{
+        pinMode(echoPin, OUTPUT);
+        digitalWrite(echoPin, LOW);
+        pinMode(echoPin, INPUT);
+    }
+    //float value = pulseIn(echoPin, HIGH, 30000) / 29.0 / 2.0;
+
+    
     if (value == 0)
     {
         value = lastUltrasonic;
@@ -1019,6 +1030,7 @@ void sendUltrasonic()
     {
         lastUltrasonic = value;
     }
+    
     writeHead();
     sendFloat(value);
     writeSerial(trigPin);
