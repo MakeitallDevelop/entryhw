@@ -35,7 +35,6 @@ function Module() {
     MP3PLAY1: 31,
     MP3PLAY2: 32,
     MP3VOL: 33,
-    RESET_: 34,
   };
 
   this.actionTypes = {
@@ -222,6 +221,7 @@ Module.prototype.handleRemoteData = function (handler) {
 };
 
 Module.prototype.isRecentData = function (port, type, data) {
+  /*
   let isRecent = false;
 
   if (port in this.recentCheckData) {
@@ -235,6 +235,40 @@ Module.prototype.isRecentData = function (port, type, data) {
   }
 
   return isRecent;
+  */
+ var that = this;
+    var isRecent = false;
+
+    if(type == this.sensorTypes.ULTRASONIC) {
+        var portString = port.toString();
+        var isGarbageClear = false;
+        Object.keys(this.recentCheckData).forEach(function (key) {
+            var recent = that.recentCheckData[key];
+            if(key === portString) {
+                
+            }
+            if(key !== portString && recent.type == that.sensorTypes.ULTRASONIC) {
+                delete that.recentCheckData[key];
+                isGarbageClear = true;
+            }
+        });
+
+        if((port in this.recentCheckData && isGarbageClear) || !(port in this.recentCheckData)) {
+            isRecent = false;
+        } else {
+            isRecent = true;
+        }
+        
+    } else if (port in this.recentCheckData && type != this.sensorTypes.TONE) {
+        if (
+            this.recentCheckData[port].type === type &&
+            this.recentCheckData[port].data === data
+        ) {
+            isRecent = true;
+        }
+    }
+
+    return isRecent;
 };
 
 Module.prototype.requestLocalData = function () {
@@ -563,6 +597,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
     case this.sensorTypes.NEOPIXELINIT: {
+      console.log('NEOPIXELINIT');
       value.writeInt16LE(data);
       buffer = new Buffer([
         255,
@@ -1052,5 +1087,7 @@ Module.prototype.reset = function () {
 
   this.sensorData.PULSEIN = {};
 };
+
+Module.prototype.lostController = function() {};
 
 module.exports = new Module();
