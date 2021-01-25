@@ -28,8 +28,8 @@
 #define PULSEIN 6
 #define ULTRASONIC 7
 #define TIMER 8
-//#define READ_BLUETOOTH 9
-//#define WRITE_BLUETOOTH 10
+#define READ_BLUETOOTH 9
+#define WRITE_BLUETOOTH 10
 #define LCD 11
 #define LCDCLEAR 12
 //#define RGBLED 13
@@ -103,7 +103,6 @@ int servo_pins[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 float lastUltrasonic = 0;
 int trigPin = 13;
 int echoPin = 12;
-
 int dinPin = 12;
 int clkPin = 11;
 int csPin = 10;
@@ -114,10 +113,10 @@ bool dotFlag = false;
 int dhtPin = 0;
 int dhtMode = 0;
 // bluetooth                //블루투스
-// String makeBtString;
-// int softSerialRX = 2;
-// int softSerialTX = 3;
-// unsigned long prev_time_BT = 0;
+String makeBtString;
+int softSerialRX = 2;
+int softSerialTX = 3;
+unsigned long prev_time_BT = 0;
 
 // LCD
 
@@ -134,7 +133,7 @@ uint8_t command_index = 0;
 
 boolean isStart = false;
 boolean isUltrasonic = false;
-// boolean isBluetooth = false;
+boolean isBluetooth = false;
 boolean isDHThumi = false;
 boolean isDHTtemp = false;
 
@@ -150,7 +149,7 @@ void _delay(float seconds)
 void setup()
 {                           //초기화
     Serial.begin(115200);   //시리얼 115200
-    //softSerial.begin(9600); //블루투스 9600
+    softSerial.begin(9600); //블루투스 9600
     //MP3Module.begin(9600);
     initPorts();
     initNeo();
@@ -194,14 +193,14 @@ void loop()
             setPinValue(serialRead & 0xff);
         }
     }
-    // while (softSerial.available())
-    // {
-    //     if (softSerial.available() > 0)
-    //     {
-    //         char softSerialRead = softSerial.read();
-    //         makeBtString += softSerialRead;
-    //     }
-    // }
+    while (softSerial.available())
+    {
+        if (softSerial.available() > 0)
+        {
+            char softSerialRead = softSerial.read();
+            makeBtString += softSerialRead;
+        }
+    }
     delay(15);
     sendPinValues(); //핀 값보내기
     delay(10);
@@ -318,42 +317,42 @@ void parseData()
             //  myDHT11.read11(dhtPin);
             digitals[port] = 1;
         }
-        // else if (device == READ_BLUETOOTH)
-        // {
-        //     softSerial.begin(9600);
-        //     pinMode(softSerialRX, INPUT);
-        //     if (!isBluetooth)
-        //     {
-        //         setBluetoothMode(true);
-        //     }
-        // }
-        // else if (device == WRITE_BLUETOOTH)
-        // {
-        //     softSerial.begin(9600);
-        //     pinMode(softSerialTX, OUTPUT);
-        //     if (!isBluetooth)
-        //     {
-        //         setBluetoothMode(true);
-        //     }
-        // }
+        else if (device == READ_BLUETOOTH)
+        {
+            softSerial.begin(9600);
+            pinMode(softSerialRX, INPUT);
+            if (!isBluetooth)
+            {
+                setBluetoothMode(true);
+            }
+        }
+        else if (device == WRITE_BLUETOOTH)
+        {
+            softSerial.begin(9600);
+            pinMode(softSerialTX, OUTPUT);
+            if (!isBluetooth)
+            {
+                setBluetoothMode(true);
+            }
+        }
         else if (port == trigPin || port == echoPin)
         {
             //isUltrasonic = false;
             setUltrasonicMode(false);
             digitals[port] = 0;
         }
-        // else if (device != READ_BLUETOOTH && port == softSerialRX)
-        // {
-        //     softSerial.end();
-        //     setBluetoothMode(false);
-        //     digitals[port] = 0;
-        // }
-        // else if (device != WRITE_BLUETOOTH && port == softSerialTX)
-        // {
-        //     softSerial.end();
-        //     setBluetoothMode(false);
-        //     digitals[port] = 0;
-        // }
+        else if (device != READ_BLUETOOTH && port == softSerialRX)
+        {
+            softSerial.end();
+            setBluetoothMode(false);
+            digitals[port] = 0;
+        }
+        else if (device != WRITE_BLUETOOTH && port == softSerialTX)
+        {
+            softSerial.end();
+            setBluetoothMode(false);
+            digitals[port] = 0;
+        }
         else
         {
             digitals[port] = 0;
@@ -393,6 +392,7 @@ void runSet(int device)
 
     switch (device)
     {
+
     case DIGITAL:
     {
         setPortWritable(pin);
@@ -438,7 +438,6 @@ void runSet(int device)
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
         strip.show();
-        strip.show();
         //delay(1);
     }
     break;
@@ -470,14 +469,12 @@ void runSet(int device)
             strip.setPixelColor(2, 0, 0, 0);
             strip.setPixelColor(3, 0, 0, 0);
             strip.show();
-            strip.show();
             delay(50);
             break;
         }
         else
         {
             strip.setPixelColor(num, r, g, b);
-            strip.show();
             strip.show();
         }
     }
@@ -497,7 +494,6 @@ void runSet(int device)
         strip.setPixelColor(3, r, g, b);
 
         strip.show();
-        strip.show();
         //delay(50);
     }
     break;
@@ -509,7 +505,6 @@ void runSet(int device)
         strip.setPixelColor(1, 0, 0, 0);
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
-        strip.show();
         strip.show();
         //delay(1);
     }
@@ -884,27 +879,27 @@ void runModule(int device)
         lcd.print(txt);
     }
     break;
-    // case WRITE_BLUETOOTH:
-    // {
-    //     char softSerialTemp[32];
-    //     int arrayNum = 7;
-    //     for (int i = 0; i < 17; i++)
-    //     {
-    //         softSerialTemp[i] = readBuffer(arrayNum);
-    //         arrayNum += 2;
-    //     }
-    //     softSerial.write(softSerialTemp);
-    // }
-    // break;
-    // default:
-    //     break;
+    case WRITE_BLUETOOTH:
+    {
+        char softSerialTemp[32];
+        int arrayNum = 7;
+        for (int i = 0; i < 17; i++)
+        {
+            softSerialTemp[i] = readBuffer(arrayNum);
+            arrayNum += 2;
+        }
+        softSerial.write(softSerialTemp);
+    }
+    break;
+    default:
+        break;
     }
 }
 
 void sendPinValues()
 { //핀 값 보내기
     int pinNumber = 0;
-    for (pinNumber = 2; pinNumber < 14; pinNumber++)
+    for (pinNumber = 4; pinNumber < 14; pinNumber++)
     {
         if (digitals[pinNumber] == 0 || digitals[pinNumber] == 2)
         {
@@ -937,35 +932,35 @@ void sendPinValues()
         sendDHT();
         callOK();
     }
-    // if (isBluetooth && millis() - prev_time_BT < 300)
-    // {
-    //     sendBluetooth();
-    //     callOK();
-    // }
-    // else
-    // {
-    //     makeBtString = "";
-    //     prev_time_BT = millis();
-    // }
+    if (isBluetooth && millis() - prev_time_BT < 300)
+    {
+        sendBluetooth();
+        callOK();
+    }
+    else
+    {
+        makeBtString = "";
+        prev_time_BT = millis();
+    }
 }
 
 void setUltrasonicMode(boolean mode)
 {
     isUltrasonic = mode;
-    // if (!mode)
-    // {
-    //     lastUltrasonic = 0;
-    // }
+    if (!mode)
+    {
+        lastUltrasonic = 0;
+    }
 }
 
-// void setBluetoothMode(boolean mode)
-// {
-//     isBluetooth = mode;
-//     if (!mode)
-//     {
-//         makeBtString = "";
-//     }
-// }
+void setBluetoothMode(boolean mode)
+{
+    isBluetooth = mode;
+    if (!mode)
+    {
+        makeBtString = "";
+    }
+}
 
 void sendDHT()
 {
@@ -1038,16 +1033,15 @@ void sendUltrasonic()
     */
     //float value = pulseIn(echoPin, HIGH, 30000) / 29.0 / 2.0;
 
-    /*
-    if (value == 0)
-    {
-        value = lastUltrasonic;
-    }
-    else
-    {
-        lastUltrasonic = value;
-    }
-    */
+    // if (value == 0)
+    // {
+    //     value = lastUltrasonic;
+    // }
+    // else
+    // {
+    //     lastUltrasonic = value;
+    // }
+
     writeHead();
     sendFloat(value);
     writeSerial(trigPin);
@@ -1056,14 +1050,14 @@ void sendUltrasonic()
     writeEnd();
 }
 
-// void sendBluetooth()
-// {
-//     writeHead();
-//     sendString(makeBtString);
-//     writeSerial(softSerialRX);
-//     writeSerial(READ_BLUETOOTH);
-//     writeEnd();
-// }
+void sendBluetooth()
+{
+    writeHead();
+    sendString(makeBtString);
+    writeSerial(softSerialRX);
+    writeSerial(READ_BLUETOOTH);
+    writeEnd();
+}
 
 void sendDigitalValue(int pinNumber)
 {
