@@ -10,16 +10,15 @@
    Copyright (C) 2013 - 2016 Maker Works Technology Co., Ltd. All right reserved.
  **********************************************************************************/
 
-// Header
 #include <dht.h>
-#include <Servo.h>
+#include <Servo.h> //헤더 호출
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_NeoPixel.h>
 #include <LedControl.h>
 #include <DFRobotDFPlayerMini.h>
 
-// Module Constant
+// Module Constant //핀설정
 #define ALIVE 0
 #define DIGITAL 1
 #define ANALOG 2
@@ -29,13 +28,18 @@
 #define PULSEIN 6
 #define ULTRASONIC 7
 #define TIMER 8
+#define READ_BLUETOOTH 9
+#define WRITE_BLUETOOTH 10
 #define LCD 11
 #define LCDCLEAR 12
+//#define RGBLED 13
 #define DCMOTOR 14
+#define OLED 15
 #define PIR 16
 #define LCDINIT 17
 #define DHTHUMI 18
 #define DHTTEMP 19
+//#define NEOPIXEL 20
 #define NEOPIXELINIT 20
 #define NEOPIXELBRIGHT 21
 #define NEOPIXEL 22
@@ -68,10 +72,15 @@ int vol;
 
 unsigned long previousMillis = 0;
 
+//LedControl lcjikko = LedControl(12, 11, 10, 1);
+
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 dht myDHT11;
+SoftwareSerial softSerial(2, 3);
 
-// val Union
+//U8GLIB_SSD1306_128X64 oled(U8G_I2C_OPT_NONE);
+
+// val Union        //??
 union
 {
     byte byteVal[4];
@@ -79,21 +88,21 @@ union
     long longVal;
 } val;
 
-// valShort Union
+// valShort Union       //??
 union
 {
     byte byteVal[2];
     short shortVal;
 } valShort;
 
-int analogs[6] = {0, 0, 0, 0, 0, 0};
+int analogs[6] = {0, 0, 0, 0, 0, 0}; // 아날로그 디지털 핀 값저장
 int digitals[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int servo_pins[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
+// Ultrasonic             //초음파 센서
 float lastUltrasonic = 0;
 int trigPin = 13;
 int echoPin = 12;
-
 int dinPin = 12;
 int clkPin = 11;
 int csPin = 10;
@@ -103,6 +112,13 @@ bool dotFlag = false;
 
 int dhtPin = 0;
 int dhtMode = 0;
+// bluetooth                //블루투스
+String makeBtString;
+int softSerialRX = 2;
+int softSerialTX = 3;
+unsigned long prev_time_BT = 0;
+
+// LCD
 
 // Buffer
 char buffer[52];
@@ -117,14 +133,24 @@ uint8_t command_index = 0;
 
 boolean isStart = false;
 boolean isUltrasonic = false;
+boolean isBluetooth = false;
 boolean isDHThumi = false;
 boolean isDHTtemp = false;
 
 // End Public Value
 
-void setup()
+void _delay(float seconds)
 {
-    Serial.begin(115200);
+    long endTime = millis() + seconds * 1000;
+    while (millis() < endTime)
+        ;
+}
+
+void setup()
+{                           //초기화
+    Serial.begin(115200);   //시리얼 115200
+    softSerial.begin(9600); //블루투스 9600
+    //MP3Module.begin(9600);
     initPorts();
     initNeo();
     initLCD();
@@ -132,7 +158,7 @@ void setup()
 }
 
 void initPorts()
-{
+{ //디지털 포트 초기화(4~14)
     for (int pinNumber = 4; pinNumber < 14; pinNumber++)
     {
         pinMode(pinNumber, OUTPUT);
@@ -151,10 +177,14 @@ void initLCD()
     lcd.init();
     lcd.backlight();
     lcd.clear();
+    // lcd.setCursor(0, 0);
+    // lcd.print("Blacksmith Board");
+    // lcd.setCursor(6, 1);
+    // lcd.print("with Entry");
 }
 
 void loop()
-{
+{ //반복 시리얼 값 , 블루투스 값 받기
     while (Serial.available())
     {
         if (Serial.available() > 0)
@@ -163,7 +193,14 @@ void loop()
             setPinValue(serialRead & 0xff);
         }
     }
-    
+    while (softSerial.available())
+    {
+        if (softSerial.available() > 0)
+        {
+            char softSerialRead = softSerial.read();
+            makeBtString += softSerialRead;
+        }
+    }
     delay(15);
     sendPinValues(); //핀 값보내기
     delay(10);
@@ -266,18 +303,54 @@ void parseData()
         else if (device == DHTHUMI)
         {
             isDHThumi = true;
+            //setDHTTEMPMode(true);
             dhtPin = readBuffer(6);
+            //myDHT11.read11(dhtPin);
             digitals[port] = 1;
         }
         else if (device == DHTTEMP)
         {
             isDHTtemp = true;
+
+            //setDHTHUMIMode(true);
             dhtPin = readBuffer(6);
+            //  myDHT11.read11(dhtPin);
             digitals[port] = 1;
+        }
+        else if (device == READ_BLUETOOTH)
+        {
+            softSerial.begin(9600);
+            pinMode(softSerialRX, INPUT);
+            if (!isBluetooth)
+            {
+                setBluetoothMode(true);
+            }
+        }
+        else if (device == WRITE_BLUETOOTH)
+        {
+            softSerial.begin(9600);
+            pinMode(softSerialTX, OUTPUT);
+            if (!isBluetooth)
+            {
+                setBluetoothMode(true);
+            }
         }
         else if (port == trigPin || port == echoPin)
         {
+            //isUltrasonic = false;
             setUltrasonicMode(false);
+            digitals[port] = 0;
+        }
+        else if (device != READ_BLUETOOTH && port == softSerialRX)
+        {
+            softSerial.end();
+            setBluetoothMode(false);
+            digitals[port] = 0;
+        }
+        else if (device != WRITE_BLUETOOTH && port == softSerialTX)
+        {
+            softSerial.end();
+            setBluetoothMode(false);
             digitals[port] = 0;
         }
         else
@@ -313,6 +386,7 @@ void runSet(int device)
     unsigned char pin = port;
     if (pin == trigPin || pin == echoPin)
     {
+        //isUltrasonic = false;
         setUltrasonicMode(false);
     }
 
@@ -348,6 +422,12 @@ void runSet(int device)
         }
     }
     break;
+        // case DHTINIT:
+        // {
+        //     dhtPin = readBuffer(6);
+        //     digitals[dhtPin] = 1;
+        // }
+        // break;
     case NEOPIXELINIT:
     {
         setPortWritable(pin);
@@ -358,17 +438,23 @@ void runSet(int device)
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
         strip.show();
+        //delay(1);
     }
     break;
     case NEOPIXELBRIGHT:
     {
+        //setPortWritable(pin);
         int bright = readBuffer(7);
 
         strip.setBrightness(bright);
+        //delay(10);
     }
     break;
     case NEOPIXEL:
     {
+        //setPortWritable(pin);
+        //strip.begin();
+
         int num = readBuffer(7);
         int r = readBuffer(9);
         int g = readBuffer(11);
@@ -377,6 +463,7 @@ void runSet(int device)
         if (num == 4)
         {
             setPortWritable(pin);
+            //strip.begin();
             strip.setPixelColor(0, 0, 0, 0);
             strip.setPixelColor(1, 0, 0, 0);
             strip.setPixelColor(2, 0, 0, 0);
@@ -394,6 +481,9 @@ void runSet(int device)
     break;
     case NEOPIXELALL:
     {
+        //setPortWritable(pin);
+        //strip.begin();
+
         int r = readBuffer(7);
         int g = readBuffer(9);
         int b = readBuffer(11);
@@ -404,18 +494,34 @@ void runSet(int device)
         strip.setPixelColor(3, r, g, b);
 
         strip.show();
+        //delay(50);
     }
     break;
     case NEOPIXELCLEAR:
     {
         setPortWritable(pin);
+        //strip.begin();
         strip.setPixelColor(0, 0, 0, 0);
         strip.setPixelColor(1, 0, 0, 0);
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
         strip.show();
+        //delay(1);
     }
     break;
+    /*
+    case PULLUP:
+    {
+        pinMode(pin, INPUT_PULLUP);
+        if(digitalRead(pin) == LOW){
+            digitalWrite(pin, 1);
+        }
+        else if(digitalRead(pin) == HIGH){
+            digitalWrite(pin, 0);
+        }
+    }
+    break;
+    */
     case DOTMATRIXINIT:
     {
         dinPin = readBuffer(7);
@@ -440,6 +546,8 @@ void runSet(int device)
         int len = readBuffer(7);
         String txt = readString(len, 9);
         String row;
+
+        ////////////////////////////////////////////////////////////////
 
         LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
         lcjikko->shutdown(0, false);
@@ -742,6 +850,9 @@ void runModule(int device)
         {
             lcd = LiquidCrystal_I2C(0x3f, readBuffer(9), readBuffer(11));
         }
+        // lcd.init();
+        // lcd.backlight();
+        // lcd.clear();
         initLCD();
     }
     break;
@@ -768,6 +879,21 @@ void runModule(int device)
         lcd.print(txt);
     }
     break;
+    case WRITE_BLUETOOTH:
+    {
+        char softSerialTemp[32];
+        int arrayNum = 7;
+        for (int i = 0; i < 17; i++)
+        {
+            softSerialTemp[i] = readBuffer(arrayNum);
+            arrayNum += 2;
+        }
+        softSerial.write(softSerialTemp);
+    }
+    break;
+    default:
+        break;
+    }
 }
 
 void sendPinValues()
@@ -806,6 +932,11 @@ void sendPinValues()
         sendDHT();
         callOK();
     }
+    if (isBluetooth && millis() - prev_time_BT < 300)
+    {
+        sendBluetooth();
+        callOK();
+    }
     else
     {
         makeBtString = "";
@@ -819,6 +950,15 @@ void setUltrasonicMode(boolean mode)
     if (!mode)
     {
         lastUltrasonic = 0;
+    }
+}
+
+void setBluetoothMode(boolean mode)
+{
+    isBluetooth = mode;
+    if (!mode)
+    {
+        makeBtString = "";
     }
 }
 
@@ -855,6 +995,20 @@ void sendUltrasonic()
     delayMicroseconds(10);
     digitalWrite(trigPin, LOW);
 
+    // float value;
+
+    // while (digitalRead(echoPin) != LOW)
+    // {
+    //     pinMode(echoPin, OUTPUT);
+    //     digitalWrite(echoPin, LOW);
+    //     pinMode(echoPin, INPUT);
+    //     digitalWrite(trigPin, LOW);
+    //     delayMicroseconds(2);
+    //     digitalWrite(trigPin, HIGH);
+    //     delayMicroseconds(10);
+    //     digitalWrite(trigPin, LOW);
+    // }
+    // value = (float)pulseIn(echoPin, HIGH) / 29 / 2;
 
     float value = pulseIn(echoPin, HIGH, 30000) / 29.0 / 2.0;
 
@@ -867,11 +1021,41 @@ void sendUltrasonic()
         lastUltrasonic = value;
     }
 
+    /*    
+    if(digitalRead(echoPin) == LOW){
+        value = (float)pulseIn(echoPin, HIGH)/29/2;
+    }
+    else{
+        pinMode(echoPin, OUTPUT);
+        digitalWrite(echoPin, LOW);
+        pinMode(echoPin, INPUT);
+    }
+    */
+    //float value = pulseIn(echoPin, HIGH, 30000) / 29.0 / 2.0;
+
+    // if (value == 0)
+    // {
+    //     value = lastUltrasonic;
+    // }
+    // else
+    // {
+    //     lastUltrasonic = value;
+    // }
+
     writeHead();
     sendFloat(value);
     writeSerial(trigPin);
     writeSerial(echoPin);
     writeSerial(ULTRASONIC);
+    writeEnd();
+}
+
+void sendBluetooth()
+{
+    writeHead();
+    sendString(makeBtString);
+    writeSerial(softSerialRX);
+    writeSerial(READ_BLUETOOTH);
     writeEnd();
 }
 
@@ -885,6 +1069,7 @@ void sendDigitalValue(int pinNumber)
     {
         pinMode(pinNumber, INPUT_PULLUP);
     }
+    // pinMode(pinNumber, INPUT);
     writeHead();
     sendFloat(digitalRead(pinNumber));
     writeSerial(pinNumber);
