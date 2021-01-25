@@ -338,6 +338,7 @@ void parseData()
         // }
         else if (port == trigPin || port == echoPin)
         {
+            //isUltrasonic = false;
             setUltrasonicMode(false);
             digitals[port] = 0;
         }
@@ -386,12 +387,12 @@ void runSet(int device)
     unsigned char pin = port;
     if (pin == trigPin || pin == echoPin)
     {
+        //isUltrasonic = false;
         setUltrasonicMode(false);
     }
 
     switch (device)
     {
-    break;
     case DIGITAL:
     {
         setPortWritable(pin);
@@ -685,73 +686,73 @@ void runSet(int device)
     case DOTMATRIXEMOJI:
     {
         int list = readBuffer(7);
-        
+
         LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
         lcjikko->shutdown(0, false);
         lcjikko->setIntensity(0, dotBright);
-        
-        switch(list){
-            case 1:
-                lcjikko->setRow(0, 0, B01100110);
-                lcjikko->setRow(0, 1, B11111111);
-                lcjikko->setRow(0, 2, B11111111);
-                lcjikko->setRow(0, 3, B11111111);
-                lcjikko->setRow(0, 4, B01111110);
-                lcjikko->setRow(0, 5, B00111100);
-                lcjikko->setRow(0, 6, B00011000);
-                lcjikko->setRow(0, 7, B01100110);
-                break;
-            case 2:
-                lcjikko->setRow(0, 0, B01100110);
-                lcjikko->setRow(0, 1, B10011001);
-                lcjikko->setRow(0, 2, B10000001);
-                lcjikko->setRow(0, 3, B10000001);
-                lcjikko->setRow(0, 4, B01000010);
-                lcjikko->setRow(0, 5, B00100100);
-                lcjikko->setRow(0, 6, B00011000);
-                lcjikko->setRow(0, 7, B00000000);
-                break;    
-            case 3:
-                lcjikko->setRow(0, 0, B00000000);
-                lcjikko->setRow(0, 1, B00010000);
-                lcjikko->setRow(0, 2, B00111000);
-                lcjikko->setRow(0, 3, B01010100);
-                lcjikko->setRow(0, 4, B00010000);
-                lcjikko->setRow(0, 5, B00010000);
-                lcjikko->setRow(0, 6, B00010000);
-                lcjikko->setRow(0, 7, B00000000);
-                break;    
-            case 4:
-                lcjikko->setRow(0, 0, B00000000);
-                lcjikko->setRow(0, 1, B00010000);
-                lcjikko->setRow(0, 2, B00010000);
-                lcjikko->setRow(0, 3, B00010000);
-                lcjikko->setRow(0, 4, B01010100);
-                lcjikko->setRow(0, 5, B00111000);
-                lcjikko->setRow(0, 6, B00010000);
-                lcjikko->setRow(0, 7, B00000000);
-                break;
-            case 5:
-                lcjikko->setRow(0, 0, B00000000);
-                lcjikko->setRow(0, 1, B00010000);
-                lcjikko->setRow(0, 2, B00100000);
-                lcjikko->setRow(0, 3, B01111110);
-                lcjikko->setRow(0, 4, B00100000);
-                lcjikko->setRow(0, 5, B00010000);
-                lcjikko->setRow(0, 6, B00000000);
-                lcjikko->setRow(0, 7, B00000000);
-                break;
-            case 6:
-                lcjikko->setRow(0, 0, B00000000);
-                lcjikko->setRow(0, 1, B00001000);
-                lcjikko->setRow(0, 2, B00000100);
-                lcjikko->setRow(0, 3, B01111110);
-                lcjikko->setRow(0, 4, B00000100);
-                lcjikko->setRow(0, 5, B00001000);
-                lcjikko->setRow(0, 6, B00000000);
-                lcjikko->setRow(0, 7, B00000000);
-                break;
-                
+
+        switch (list)
+        {
+        case 1:
+            lcjikko->setRow(0, 0, B01100110);
+            lcjikko->setRow(0, 1, B11111111);
+            lcjikko->setRow(0, 2, B11111111);
+            lcjikko->setRow(0, 3, B11111111);
+            lcjikko->setRow(0, 4, B01111110);
+            lcjikko->setRow(0, 5, B00111100);
+            lcjikko->setRow(0, 6, B00011000);
+            lcjikko->setRow(0, 7, B01100110);
+            break;
+        case 2:
+            lcjikko->setRow(0, 0, B01100110);
+            lcjikko->setRow(0, 1, B10011001);
+            lcjikko->setRow(0, 2, B10000001);
+            lcjikko->setRow(0, 3, B10000001);
+            lcjikko->setRow(0, 4, B01000010);
+            lcjikko->setRow(0, 5, B00100100);
+            lcjikko->setRow(0, 6, B00011000);
+            lcjikko->setRow(0, 7, B00000000);
+            break;
+        case 3:
+            lcjikko->setRow(0, 0, B00000000);
+            lcjikko->setRow(0, 1, B00010000);
+            lcjikko->setRow(0, 2, B00111000);
+            lcjikko->setRow(0, 3, B01010100);
+            lcjikko->setRow(0, 4, B00010000);
+            lcjikko->setRow(0, 5, B00010000);
+            lcjikko->setRow(0, 6, B00010000);
+            lcjikko->setRow(0, 7, B00000000);
+            break;
+        case 4:
+            lcjikko->setRow(0, 0, B00000000);
+            lcjikko->setRow(0, 1, B00010000);
+            lcjikko->setRow(0, 2, B00010000);
+            lcjikko->setRow(0, 3, B00010000);
+            lcjikko->setRow(0, 4, B01010100);
+            lcjikko->setRow(0, 5, B00111000);
+            lcjikko->setRow(0, 6, B00010000);
+            lcjikko->setRow(0, 7, B00000000);
+            break;
+        case 5:
+            lcjikko->setRow(0, 0, B00000000);
+            lcjikko->setRow(0, 1, B00010000);
+            lcjikko->setRow(0, 2, B00100000);
+            lcjikko->setRow(0, 3, B01111110);
+            lcjikko->setRow(0, 4, B00100000);
+            lcjikko->setRow(0, 5, B00010000);
+            lcjikko->setRow(0, 6, B00000000);
+            lcjikko->setRow(0, 7, B00000000);
+            break;
+        case 6:
+            lcjikko->setRow(0, 0, B00000000);
+            lcjikko->setRow(0, 1, B00001000);
+            lcjikko->setRow(0, 2, B00000100);
+            lcjikko->setRow(0, 3, B01111110);
+            lcjikko->setRow(0, 4, B00000100);
+            lcjikko->setRow(0, 5, B00001000);
+            lcjikko->setRow(0, 6, B00000000);
+            lcjikko->setRow(0, 7, B00000000);
+            break;
         }
         delete lcjikko;
     }
@@ -999,20 +1000,31 @@ void sendUltrasonic()
     delayMicroseconds(10);
     digitalWrite(trigPin, LOW);
 
-    float value;
+    // float value;
 
-    while(digitalRead(echoPin) != LOW){
-        pinMode(echoPin, OUTPUT);
-        digitalWrite(echoPin, LOW);
-        pinMode(echoPin, INPUT);
+    // while (digitalRead(echoPin) != LOW)
+    // {
+    //     pinMode(echoPin, OUTPUT);
+    //     digitalWrite(echoPin, LOW);
+    //     pinMode(echoPin, INPUT);
+    //     digitalWrite(trigPin, LOW);
+    //     delayMicroseconds(2);
+    //     digitalWrite(trigPin, HIGH);
+    //     delayMicroseconds(10);
+    //     digitalWrite(trigPin, LOW);
+    // }
+    // value = (float)pulseIn(echoPin, HIGH) / 29 / 2;
 
-        digitalWrite(trigPin, LOW);
-        delayMicroseconds(2);
-        digitalWrite(trigPin, HIGH);
-        delayMicroseconds(10);
-        digitalWrite(trigPin, LOW);
+    float value = pulseIn(echoPin, HIGH, 30000) / 29.0 / 2.0;
+
+    if (value == 0)
+    {
+        value = lastUltrasonic;
     }
-    value = (float)pulseIn(echoPin, HIGH)/29/2;
+    else
+    {
+        lastUltrasonic = value;
+    }
 
     /*    
     if(digitalRead(echoPin) == LOW){
