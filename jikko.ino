@@ -172,12 +172,12 @@ void loop()
     {
         if (Serial.available() > 0)
         {
-            char serialRead = Serial.read();
-            setPinValue(serialRead & 0xff);
+            char serialRead = Serial.read(); //시리얼 읽어옴
+            setPinValue(serialRead & 0xff);  //읽어온 값을 버퍼에 저장
         }
     }
     delay(15);
-    sendPinValues(); //핀 값보내기
+    sendPinValues(); //핀 값 전송
     delay(10);
 }
 
@@ -239,9 +239,13 @@ unsigned char readBuffer(int index)
  * GET인 경우 해당 포트 셋팅
  * SET/MODULE인 경우 runSet/runMoudle 호출
  * 
- * Buffer
- * 0xff 0x55 bufLen sensorIdx actionType device port
- *  0    1     2        3          4       5      6
+ * [ Buffer ]
+ * 0xff 0x55 bufLen sensorIdx actionType device port  data   data  ....
+ *  0    1     2        3          4       5      6    7      9
+ * sensorIdx: 센서 인덱스 => 사용안함.
+ * actionType: get/set/moudule/reset
+ * device: 센서 종류
+ * port: 포트 번호
  * **/
 void parseData()
 {
@@ -252,10 +256,14 @@ void parseData()
     int device = readBuffer(5);
     int port = readBuffer(6);
 
-    switch (action)
+    switch (action) //actionType
     {
     case GET:
-    {
+    { /*
+    데이터를 받아와 값을 전송해야함 
+    => 해당 함수에선 플래그 설정 및 setup()과 같이 핀모드 설정만 하고
+    센서 작동 및 시리얼 전송은 sendPinValues()에서 실행
+    */
         if (device == DIGITAL)
         {
             //[readBuffer(7)의 값] pullup: 2, normal:0
@@ -268,13 +276,14 @@ void parseData()
                 setUltrasonicMode(true);
                 trigPin = readBuffer(6);
                 echoPin = readBuffer(7);
+                //1로 설정하여 sendPinValues()에서 INPUT으로 설정되는 것 방지
                 digitals[trigPin] = 1;
                 digitals[echoPin] = 1;
                 pinMode(trigPin, OUTPUT);
                 pinMode(echoPin, INPUT);
                 delay(50);
             }
-            else
+            else //초음파모드가 셋팅되어있는 경우
             {
                 int trig = readBuffer(6);
                 int echo = readBuffer(7);
@@ -313,13 +322,13 @@ void parseData()
         }
     }
     break;
-    case SET:
+    case SET: //센서에 출력해야하는 경우
     {
         runSet(device);
         callOK();
     }
     break;
-    case MODULE:
+    case MODULE: //LCD 작동
     {
         runModule(device);
         callOK();
@@ -335,6 +344,7 @@ void parseData()
 /**
  * action == set인 경우 해당 포트 셋팅
  * setPortWritable(pin)으로 digitals[pin]으로 1로 셋팅해야 함
+ * 센서에 값만 셋팅하면 되므로 아두이노에서 센서를 동작시킨 것처럼 하면 됨 
  * */
 void runSet(int device)
 {
@@ -343,14 +353,14 @@ void runSet(int device)
     int port = readBuffer(6);
     unsigned char pin = port;
     if (pin == trigPin || pin == echoPin)
-    { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우
+    { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우 모드 비활성화
         setUltrasonicMode(false);
     }
 
     switch (device)
     {
 
-    case DIGITAL:
+    case DIGITAL: //센서 셋팅
     {
         setPortWritable(pin);
         int v = readBuffer(7);
@@ -382,6 +392,7 @@ void runSet(int device)
     case NEOPIXELINIT:
     {
         setPortWritable(pin);
+        //받아온 값으로 포트 재설정
         strip = Adafruit_NeoPixel(readBuffer(7), readBuffer(6), NEO_GRB + NEO_KHZ800);
         strip.begin();
         strip.setPixelColor(0, 0, 0, 0);
@@ -394,6 +405,7 @@ void runSet(int device)
     case NEOPIXELBRIGHT:
     {
         int bright = readBuffer(7);
+        //밝기 설정
         strip.setBrightness(bright);
     }
     break;
@@ -453,6 +465,7 @@ void runSet(int device)
         setPortWritable(dinPin);
         setPortWritable(clkPin);
         setPortWritable(csPin);
+        //받아온 값으로 포트 재설정
         dotMatrix = LedControl(dinPin, clkPin, csPin, 1);
         dotMatrix.shutdown(0, false);
         dotMatrix.setIntensity(0, dotBright);
@@ -466,6 +479,8 @@ void runSet(int device)
     case DOTMATRIXBRIGHT:
     {
         dotBright = readBuffer(7);
+        //밝기 재설정
+        dotMatrix.setIntensity(0, dotBright);
     }
     break;
     case DOTMATRIX:
@@ -473,7 +488,6 @@ void runSet(int device)
         int len = readBuffer(7);
         String txt = readString(len, 9); //입력받은 Hex 저장
         String row;
-
         //입력받은 Hex 값에 따라 도트 매트릭스 on/off
         for (int temp = 15; temp > 0; temp -= 2)
         {
@@ -677,6 +691,7 @@ void runSet(int device)
         rx = readBuffer(9);
         setPortWritable(tx);
         setPortWritable(rx);
+        //입력받은 값으로 포트 재설정
         MP3Module = SoftwareSerial(tx, rx);
         MP3Module.begin(9600);
         MP3Player.begin(MP3Module);
@@ -721,6 +736,7 @@ void runSet(int device)
     }
 }
 
+//I2CLCD 작동
 void runModule(int device)
 {
     //0xff 0x55 0x6 0x0 0x1 0xa 0x9 0x0 0x0 0xa
@@ -733,11 +749,11 @@ void runModule(int device)
     {
     case LCDINIT:
     {                           //주소, column, line 순서
-        if (readBuffer(7) == 0) //0x27
+        if (readBuffer(7) == 0) //주소: 0x27
         {
             lcd = LiquidCrystal_I2C(0x27, readBuffer(9), readBuffer(11));
         }
-        else //0x3f
+        else //주소: 0x3f
         {
             lcd = LiquidCrystal_I2C(0x3f, readBuffer(9), readBuffer(11));
         }
@@ -793,12 +809,13 @@ void sendPinValues()
         }
     }
 
+    //초음파 센서 값 전송
     if (isUltrasonic)
     {
         sendUltrasonic();
         callOK();
     }
-
+    //DHT 센서 값 전송
     if (isDHThumi)
     {
         sendDHT();
@@ -829,10 +846,10 @@ void sendDHT()
     delay(50);
     if (isDHTtemp)
     {
-        writeHead(); //읽어온 값 전송
-        sendFloat(fTempC);
+        writeHead();       //읽어온 값 시리얼 전송 시작
+        sendFloat(fTempC); //float 시리얼 전송
         writeSerial(DHTTEMP);
-        writeEnd();
+        writeEnd(); //줄바꿈
     }
 
     if (isDHThumi)
@@ -864,7 +881,7 @@ void sendUltrasonic()
         lastUltrasonic = value;
     }
 
-    writeHead(); //읽어온 값 전송
+    writeHead(); //읽어온 값 시리얼 전송 시작
     sendFloat(value);
     writeSerial(trigPin);
     writeSerial(echoPin);
@@ -875,14 +892,14 @@ void sendUltrasonic()
 void sendDigitalValue(int pinNumber)
 {
     if (digitals[pinNumber] == 0)
-    {
+    { //INPUT
         pinMode(pinNumber, INPUT);
     }
     else if (digitals[pinNumber] == 2)
-    {
+    { //INPUT PULLUP
         pinMode(pinNumber, INPUT_PULLUP);
     }
-    writeHead();
+    writeHead(); //읽어온 값 시리얼 전송 시작
     sendFloat(digitalRead(pinNumber));
     writeSerial(pinNumber);
     writeSerial(DIGITAL);
@@ -1019,6 +1036,7 @@ int searchServoPin(int pin)
     return 0;
 }
 
+//pinMode OUTPUT 설정
 void setPortWritable(int pin)
 {
     if (digitals[pin] == 0)
