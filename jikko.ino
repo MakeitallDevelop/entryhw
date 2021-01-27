@@ -157,7 +157,6 @@ void initNeo()
 { // 네오픽셀 초기화
     strip.begin();
     strip.show();
-    strip.show();
 }
 
 void initLCD()
@@ -390,7 +389,6 @@ void runSet(int device)
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
         strip.show();
-        strip.show();
     }
     break;
     case NEOPIXELBRIGHT:
@@ -406,7 +404,8 @@ void runSet(int device)
         int g = readBuffer(11);
         int b = readBuffer(13);
 
-        if (num == 4) //setZero에서 호출한 경우, 초기화
+        //data=0인 경우 초기화
+        if (num == 0 && r == 0 && g == 0 && b == 0)
         {
             setPortWritable(pin);
             strip.setPixelColor(0, 0, 0, 0);
@@ -414,16 +413,12 @@ void runSet(int device)
             strip.setPixelColor(2, 0, 0, 0);
             strip.setPixelColor(3, 0, 0, 0);
             strip.show();
-            strip.show();
             delay(50);
             break;
         }
-        else
-        {
-            strip.setPixelColor(num, r, g, b);
-            strip.show();
-            strip.show();
-        }
+
+        strip.setPixelColor(num, r, g, b);
+        strip.show();
     }
     break;
     case NEOPIXELALL:
@@ -438,7 +433,6 @@ void runSet(int device)
         strip.setPixelColor(3, r, g, b);
 
         strip.show();
-        strip.show();
     }
     break;
     case NEOPIXELCLEAR:
@@ -448,7 +442,6 @@ void runSet(int device)
         strip.setPixelColor(1, 0, 0, 0);
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
-        strip.show();
         strip.show();
     }
     break;
@@ -757,15 +750,15 @@ void runModule(int device)
     case LCD:
     {
         int row = readBuffer(7);
-        if (row == 3) //setZero에서 호출된 경우 초기화
+        int column = readBuffer(9);
+        int len = readBuffer(11);
+        String txt = readString(len, 13);
+        if (len == 0) //data=0인 경우
         {
             lcd.init();
             lcd.clear();
             break;
         }
-        int column = readBuffer(9);
-        int len = readBuffer(11);
-        String txt = readString(len, 13);
 
         lcd.setCursor(column, row);
         lcd.print(txt);
