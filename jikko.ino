@@ -10,15 +10,21 @@
    Copyright (C) 2013 - 2016 Maker Works Technology Co., Ltd. All right reserved.
  **********************************************************************************/
 
+//dht 센서 라이브러리
 #include <dht.h>
-#include <Servo.h> //헤더 호출
+//서보 라이브러리
+#include <Servo.h>
+//I2C LCD 라이브러리
 #include <LiquidCrystal_I2C.h>
+//MP3 라이브러리
 #include <SoftwareSerial.h>
-#include <Adafruit_NeoPixel.h>
-#include <LedControl.h>
 #include <DFRobotDFPlayerMini.h>
+//네오픽셀 라이브러리
+#include <Adafruit_NeoPixel.h>
+//도트 매트릭스 라이브러리
+#include <LedControl.h>
 
-// Module Constant //핀설정
+// 핀 설정
 #define ALIVE 0
 #define DIGITAL 1
 #define ANALOG 2
@@ -47,7 +53,6 @@
 #define DOTMATRIXCLEAR 29
 #define MP3INIT 30
 #define MP3PLAY1 31
-#define MP3PLAY2 32
 #define MP3VOL 33
 
 // State Constant
@@ -56,21 +61,7 @@
 #define MODULE 3
 #define RESET 4
 
-Servo servos[8];
-Servo sv;
-
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
-
-int tx;
-int rx;
-int vol;
-
-unsigned long previousMillis = 0;
-
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-dht myDHT11;
-
-// val Union        //??
+// val Union
 union
 {
     byte byteVal[4];
@@ -78,7 +69,7 @@ union
     long longVal;
 } val;
 
-// valShort Union       //??
+// valShort Union
 union
 {
     byte byteVal[2];
@@ -86,22 +77,43 @@ union
 } valShort;
 
 int analogs[6] = {0, 0, 0, 0, 0, 0}; // 아날로그 디지털 핀 값저장
+// 0:INPUT 1:OUTPUT 2: INPUT_PULLUP
 int digitals[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int servo_pins[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-// Ultrasonic             //초음파 센서
+// 초음파 센서 포트
 float lastUltrasonic = 0;
 int trigPin = 13;
 int echoPin = 12;
+
+//도트 매트릭스 포트, 밝기
 int dinPin = 12;
 int clkPin = 11;
 int csPin = 10;
 int dotBright = 8;
 
-bool dotFlag = false;
-
+//dht 포트
 int dhtPin = 0;
-int dhtMode = 0;
+
+//mp3 포트
+int tx = 10;
+int rx = 11;
+int vol = 15;
+
+//서보
+Servo servos[8];
+Servo sv;
+//네오픽셀, 기본 핀: D7
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, 7, NEO_GRB + NEO_KHZ800);
+//I2C LCD, 기본 주소: 0x27
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+//dht
+dht myDHT11;
+//mp3 포트 & 볼륨
+SoftwareSerial MP3Module = SoftwareSerial(tx, rx);
+DFRobotDFPlayerMini MP3Player;
+//도트매트릭스
+LedControl dotMatrix = LedControl(dinPin, clkPin, csPin, 1);
 
 // Buffer
 char buffer[52];
@@ -115,6 +127,8 @@ double currentTime = 0.0;
 uint8_t command_index = 0;
 
 boolean isStart = false;
+
+//GET&SET을 동시에 하는 초음파, DHT 센서를 위한 플래그
 boolean isUltrasonic = false;
 boolean isDHThumi = false;
 boolean isDHTtemp = false;
@@ -122,17 +136,17 @@ boolean isDHTtemp = false;
 // End Public Value
 
 void setup()
-{                           //초기화
-    Serial.begin(115200);   //시리얼 115200
-    initPorts();
-    initNeo();
-    initLCD();
+{                         //초기화
+    Serial.begin(115200); //시리얼 115200
+    initPorts();          //포트 초기화
+    initNeo();            //네오픽셀 초기화
+    initLCD();            //LCD 초기화
     delay(200);
 }
 
 void initPorts()
-{ //디지털 포트 초기화(4~14)
-    for (int pinNumber = 4; pinNumber < 14; pinNumber++)
+{ //디지털 포트 초기화(2~14)
+    for (int pinNumber = 2; pinNumber < 14; pinNumber++)
     {
         pinMode(pinNumber, OUTPUT);
         digitalWrite(pinNumber, LOW);
@@ -153,7 +167,7 @@ void initLCD()
 }
 
 void loop()
-{ //반복 시리얼 값 , 블루투스 값 받기
+{ //반복 시리얼 값 받기
     while (Serial.available())
     {
         if (Serial.available() > 0)
@@ -167,6 +181,7 @@ void loop()
     delay(10);
 }
 
+// 시리얼에서 읽어온 값을 버퍼에 읽어오고 파싱
 void setPinValue(unsigned char c)
 {
     if (c == 0x55 && isStart == false)
@@ -190,7 +205,7 @@ void setPinValue(unsigned char c)
             {
                 dataLen--;
             }
-            writeBuffer(index, c);
+            writeBuffer(index, c); //버퍼에 읽어옴
         }
     }
 
@@ -205,16 +220,28 @@ void setPinValue(unsigned char c)
     if (isStart && dataLen == 0 && index > 3)
     {
         isStart = false;
-        parseData();
+        parseData(); //센서 케이스 별로 데이터 파싱
         index = 0;
     }
 }
 
+/**
+ * 버퍼의 index에 위치한 값 반환
+ * @param int index: 읽을 버퍼 인덱스
+**/
 unsigned char readBuffer(int index)
 {
     return buffer[index];
 }
 
+/**
+ * GET/SET/MODULE/RESET 분류
+ * GET인 경우 해당 포트 셋팅
+ * SET/MODULE인 경우 runSet/runMoudle 호출
+ * 
+ * Buffer
+ * 0xff 0x55 0xff textLen action device port
+ * **/
 void parseData()
 {
     isStart = false;
@@ -230,12 +257,13 @@ void parseData()
     {
         if (device == DIGITAL)
         {
+            //[readBuffer(7)의 값] pullup: 2, normal:0
             digitals[port] = readBuffer(7);
         }
         else if (device == ULTRASONIC)
         {
             if (!isUltrasonic)
-            {
+            { //초음파 센서 초기 셋팅
                 setUltrasonicMode(true);
                 trigPin = readBuffer(6);
                 echoPin = readBuffer(7);
@@ -250,7 +278,7 @@ void parseData()
                 int trig = readBuffer(6);
                 int echo = readBuffer(7);
                 if (trig != trigPin || echo != echoPin)
-                {
+                { //trig, echo 포트가 변경된 경우 포트 재셋팅
                     trigPin = trig;
                     echoPin = echo;
                     digitals[trigPin] = 1;
@@ -265,17 +293,16 @@ void parseData()
         {
             isDHThumi = true;
             dhtPin = readBuffer(6);
-            digitals[port] = 1;
+            digitals[dhtPin] = 1;
         }
         else if (device == DHTTEMP)
         {
             isDHTtemp = true;
-
             dhtPin = readBuffer(6);
-            digitals[port] = 1;
+            digitals[dhtPin] = 1;
         }
         else if (port == trigPin || port == echoPin)
-        {
+        { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우
             setUltrasonicMode(false);
             digitals[port] = 0;
         }
@@ -304,6 +331,10 @@ void parseData()
     }
 }
 
+/**
+ * action == set인 경우 해당 포트 셋팅
+ * setPortWritable(pin)으로 digitals[pin]으로 1로 셋팅해야 함
+ * */
 void runSet(int device)
 {
     //0xff 0x55 0x6 0x0 0x1 0xa 0x9 0x0 0x0 0xa
@@ -311,7 +342,7 @@ void runSet(int device)
     int port = readBuffer(6);
     unsigned char pin = port;
     if (pin == trigPin || pin == echoPin)
-    {
+    { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우
         setUltrasonicMode(false);
     }
 
@@ -332,7 +363,7 @@ void runSet(int device)
         analogWrite(pin, v);
     }
     break;
-    case TONE:
+    case TONE: //피에조 부저
     {
         setPortWritable(pin);
         int hz = readShort(7);
@@ -362,7 +393,6 @@ void runSet(int device)
     case NEOPIXELBRIGHT:
     {
         int bright = readBuffer(7);
-
         strip.setBrightness(bright);
     }
     break;
@@ -373,7 +403,7 @@ void runSet(int device)
         int g = readBuffer(11);
         int b = readBuffer(13);
 
-        if (num == 4)
+        if (num == 4) //setZero에서 호출한 경우, 초기화
         {
             setPortWritable(pin);
             strip.setPixelColor(0, 0, 0, 0);
@@ -420,13 +450,17 @@ void runSet(int device)
         dinPin = readBuffer(7);
         clkPin = readBuffer(9);
         csPin = readBuffer(11);
+        setPortWritable(dinPin);
+        setPortWritable(clkPin);
+        setPortWritable(csPin);
+        dotMatrix = LedControl(dinPin, clkPin, csPin, 1);
+        dotMatrix.shutdown(0, false);
+        dotMatrix.setIntensity(0, dotBright);
     }
     break;
     case DOTMATRIXCLEAR:
     {
-        LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
-        lcjikko->clearDisplay(0);
-        delete lcjikko;
+        dotMatrix.clearDisplay(0);
     }
     break;
     case DOTMATRIXBRIGHT:
@@ -437,13 +471,10 @@ void runSet(int device)
     case DOTMATRIX:
     {
         int len = readBuffer(7);
-        String txt = readString(len, 9);
+        String txt = readString(len, 9); //입력받은 Hex 저장
         String row;
 
-        LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
-        lcjikko->shutdown(0, false);
-        lcjikko->setIntensity(0, dotBright);
-
+        //입력받은 Hex 값에 따라 도트 매트릭스 on/off
         for (int temp = 15; temp > 0; temp -= 2)
         {
             switch (txt.charAt(temp - 1))
@@ -496,13 +527,13 @@ void runSet(int device)
             }
             for (int col = 0; col < 4; col++)
             {
-                if (row.charAt(col) == '1')
+                if (row.charAt(col) == '1') //1인 경우 킴
                 {
-                    lcjikko->setLed(0, 7 - (temp - 1) / 2, col, true);
+                    dotMatrix.setLed(0, 7 - (temp - 1) / 2, col, true);
                 }
                 else
                 {
-                    lcjikko->setLed(0, 7 - (temp - 1) / 2, col, false);
+                    dotMatrix.setLed(0, 7 - (temp - 1) / 2, col, false);
                 }
             }
             switch (txt.charAt(temp))
@@ -557,90 +588,83 @@ void runSet(int device)
             {
                 if (row.charAt(col) == '1')
                 {
-                    lcjikko->setLed(0, 7 - (temp - 1) / 2, col + 4, true);
+                    dotMatrix.setLed(0, 7 - (temp - 1) / 2, col + 4, true);
                 }
                 else
                 {
-                    lcjikko->setLed(0, 7 - (temp - 1) / 2, col + 4, false);
+                    dotMatrix.setLed(0, 7 - (temp - 1) / 2, col + 4, false);
                 }
             }
         }
-
-        delete lcjikko;
     }
     break;
     case DOTMATRIXEMOJI:
     {
         int list = readBuffer(7);
 
-        LedControl *lcjikko = new LedControl(dinPin, clkPin, csPin, 1);
-        lcjikko->shutdown(0, false);
-        lcjikko->setIntensity(0, dotBright);
-
         switch (list)
         {
         case 1:
-            lcjikko->setRow(0, 0, B01100110);
-            lcjikko->setRow(0, 1, B11111111);
-            lcjikko->setRow(0, 2, B11111111);
-            lcjikko->setRow(0, 3, B11111111);
-            lcjikko->setRow(0, 4, B01111110);
-            lcjikko->setRow(0, 5, B00111100);
-            lcjikko->setRow(0, 6, B00011000);
-            lcjikko->setRow(0, 7, B01100110);
+            dotMatrix.setRow(0, 0, B01100110);
+            dotMatrix.setRow(0, 1, B11111111);
+            dotMatrix.setRow(0, 2, B11111111);
+            dotMatrix.setRow(0, 3, B11111111);
+            dotMatrix.setRow(0, 4, B01111110);
+            dotMatrix.setRow(0, 5, B00111100);
+            dotMatrix.setRow(0, 6, B00011000);
+            dotMatrix.setRow(0, 7, B00000000);
             break;
         case 2:
-            lcjikko->setRow(0, 0, B01100110);
-            lcjikko->setRow(0, 1, B10011001);
-            lcjikko->setRow(0, 2, B10000001);
-            lcjikko->setRow(0, 3, B10000001);
-            lcjikko->setRow(0, 4, B01000010);
-            lcjikko->setRow(0, 5, B00100100);
-            lcjikko->setRow(0, 6, B00011000);
-            lcjikko->setRow(0, 7, B00000000);
+            dotMatrix.setRow(0, 0, B01100110);
+            dotMatrix.setRow(0, 1, B10011001);
+            dotMatrix.setRow(0, 2, B10000001);
+            dotMatrix.setRow(0, 3, B10000001);
+            dotMatrix.setRow(0, 4, B01000010);
+            dotMatrix.setRow(0, 5, B00100100);
+            dotMatrix.setRow(0, 6, B00011000);
+            dotMatrix.setRow(0, 7, B00000000);
             break;
         case 3:
-            lcjikko->setRow(0, 0, B00000000);
-            lcjikko->setRow(0, 1, B00010000);
-            lcjikko->setRow(0, 2, B00111000);
-            lcjikko->setRow(0, 3, B01010100);
-            lcjikko->setRow(0, 4, B00010000);
-            lcjikko->setRow(0, 5, B00010000);
-            lcjikko->setRow(0, 6, B00010000);
-            lcjikko->setRow(0, 7, B00000000);
+            dotMatrix.setRow(0, 0, B00000000);
+            dotMatrix.setRow(0, 1, B00010000);
+            dotMatrix.setRow(0, 2, B00111000);
+            dotMatrix.setRow(0, 3, B01010100);
+            dotMatrix.setRow(0, 4, B00010000);
+            dotMatrix.setRow(0, 5, B00010000);
+            dotMatrix.setRow(0, 6, B00010000);
+            dotMatrix.setRow(0, 7, B00000000);
             break;
         case 4:
-            lcjikko->setRow(0, 0, B00000000);
-            lcjikko->setRow(0, 1, B00010000);
-            lcjikko->setRow(0, 2, B00010000);
-            lcjikko->setRow(0, 3, B00010000);
-            lcjikko->setRow(0, 4, B01010100);
-            lcjikko->setRow(0, 5, B00111000);
-            lcjikko->setRow(0, 6, B00010000);
-            lcjikko->setRow(0, 7, B00000000);
+            dotMatrix.setRow(0, 0, B00000000);
+            dotMatrix.setRow(0, 1, B00010000);
+            dotMatrix.setRow(0, 2, B00010000);
+            dotMatrix.setRow(0, 3, B00010000);
+            dotMatrix.setRow(0, 4, B01010100);
+            dotMatrix.setRow(0, 5, B00111000);
+            dotMatrix.setRow(0, 6, B00010000);
+            dotMatrix.setRow(0, 7, B00000000);
             break;
         case 5:
-            lcjikko->setRow(0, 0, B00000000);
-            lcjikko->setRow(0, 1, B00010000);
-            lcjikko->setRow(0, 2, B00100000);
-            lcjikko->setRow(0, 3, B01111110);
-            lcjikko->setRow(0, 4, B00100000);
-            lcjikko->setRow(0, 5, B00010000);
-            lcjikko->setRow(0, 6, B00000000);
-            lcjikko->setRow(0, 7, B00000000);
+            dotMatrix.setRow(0, 0, B00000000);
+            dotMatrix.setRow(0, 1, B00010000);
+            dotMatrix.setRow(0, 2, B00100000);
+            dotMatrix.setRow(0, 3, B01111110);
+            dotMatrix.setRow(0, 4, B00100000);
+            dotMatrix.setRow(0, 5, B00010000);
+            dotMatrix.setRow(0, 6, B00000000);
+            dotMatrix.setRow(0, 7, B00000000);
             break;
         case 6:
-            lcjikko->setRow(0, 0, B00000000);
-            lcjikko->setRow(0, 1, B00001000);
-            lcjikko->setRow(0, 2, B00000100);
-            lcjikko->setRow(0, 3, B01111110);
-            lcjikko->setRow(0, 4, B00000100);
-            lcjikko->setRow(0, 5, B00001000);
-            lcjikko->setRow(0, 6, B00000000);
-            lcjikko->setRow(0, 7, B00000000);
+            dotMatrix.setRow(0, 0, B00000000);
+            dotMatrix.setRow(0, 1, B00001000);
+            dotMatrix.setRow(0, 2, B00000100);
+            dotMatrix.setRow(0, 3, B01111110);
+            dotMatrix.setRow(0, 4, B00000100);
+            dotMatrix.setRow(0, 5, B00001000);
+            dotMatrix.setRow(0, 6, B00000000);
+            dotMatrix.setRow(0, 7, B00000000);
             break;
         }
-        delete lcjikko;
     }
     break;
 
@@ -648,39 +672,25 @@ void runSet(int device)
     {
         tx = readBuffer(7);
         rx = readBuffer(9);
-        vol = 15;
+        setPortWritable(tx);
+        setPortWritable(rx);
+        MP3Module = SoftwareSerial(tx, rx);
+        MP3Module.begin(9600);
+        MP3Player.begin(MP3Module);
+
+        vol = 15; //vol 초기 값
+        MP3Player.volume(vol);
+        delay(10); //없으면 작동 X
     }
     break;
     case MP3PLAY1:
     {
-        SoftwareSerial MP3Module = SoftwareSerial(tx, rx); // tx rx
-        DFRobotDFPlayerMini MP3Player;
-        MP3Module.begin(9600);
-        MP3Player.begin(MP3Module);
-
         MP3Player.volume(vol);
-        delay(10);
-
+        delay(10); //없으면 작동 X
         int num = readBuffer(9);
         MP3Player.play(num);
     }
     break;
-
-    case MP3PLAY2:
-    {
-        int num = readBuffer(9);
-        int time_value = readBuffer(11);
-        SoftwareSerial MP3Module = SoftwareSerial(tx, rx); // tx rx
-        DFRobotDFPlayerMini MP3Player;
-        MP3Module.begin(9600);
-        MP3Player.begin(MP3Module);
-
-        MP3Player.volume(vol);
-        delay(10);
-        MP3Player.play(num);
-    }
-    break;
-
     case MP3VOL:
     {
         vol = readBuffer(9);
@@ -703,18 +713,6 @@ void runSet(int device)
         lastTime = millis() / 1000.0;
     }
     break;
-    case DCMOTOR:
-    {
-        int directionPort = readBuffer(7);
-        int speedPort = readBuffer(9);
-        int directionValue = readBuffer(11);
-        int speedValue = readBuffer(13);
-        setPortWritable(directionPort);
-        setPortWritable(speedPort);
-        digitalWrite(directionPort, directionValue);
-        analogWrite(speedPort, speedValue);
-    }
-    break;
     default:
         break;
     }
@@ -731,13 +729,12 @@ void runModule(int device)
     switch (device)
     {
     case LCDINIT:
-    {
-        //주소, column, line 순서
+    {                           //주소, column, line 순서
         if (readBuffer(7) == 0) //0x27
         {
             lcd = LiquidCrystal_I2C(0x27, readBuffer(9), readBuffer(11));
         }
-        else
+        else //0x3f
         {
             lcd = LiquidCrystal_I2C(0x3f, readBuffer(9), readBuffer(11));
         }
@@ -753,7 +750,7 @@ void runModule(int device)
     case LCD:
     {
         int row = readBuffer(7);
-        if (row == 3)
+        if (row == 3) //setZero에서 호출된 경우 초기화
         {
             lcd.init();
             lcd.clear();
@@ -767,7 +764,7 @@ void runModule(int device)
         lcd.print(txt);
     }
     break;
-    break;
+        break;
     default:
         break;
     }
@@ -779,7 +776,7 @@ void sendPinValues()
     for (pinNumber = 2; pinNumber < 14; pinNumber++)
     {
         if (digitals[pinNumber] == 0 || digitals[pinNumber] == 2)
-        {
+        { //0:INPUT, 1:OUTPUT, 2:PULLUP
             sendDigitalValue(pinNumber);
             callOK();
         }
@@ -829,7 +826,7 @@ void sendDHT()
     delay(50);
     if (isDHTtemp)
     {
-        writeHead();
+        writeHead(); //읽어온 값 전송
         sendFloat(fTempC);
         writeSerial(DHTTEMP);
         writeEnd();
@@ -864,7 +861,7 @@ void sendUltrasonic()
         lastUltrasonic = value;
     }
 
-    writeHead();
+    writeHead(); //읽어온 값 전송
     sendFloat(value);
     writeSerial(trigPin);
     writeSerial(echoPin);
@@ -988,6 +985,8 @@ long readLong(int idx)
     val.byteVal[3] = readBuffer(idx + 3);
     return val.longVal;
 }
+
+//LCD String을 버퍼에 읽어들임
 String readString(int len, int startIdx)
 {
     String str = "";
