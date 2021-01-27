@@ -523,6 +523,9 @@ void runSet(int device)
                 row = "1101";
                 break;
             case 'e':
+                row = "1110";
+                break;
+            case 'f':
                 row = "1111";
                 break;
             }
@@ -582,6 +585,9 @@ void runSet(int device)
                 row = "1101";
                 break;
             case 'e':
+                row = "1110";
+                break;
+            case 'f':
                 row = "1111";
                 break;
             }
