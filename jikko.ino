@@ -610,6 +610,9 @@ void runSet(int device)
 
         switch (list)
         {
+        case 0:
+            dotMatrix.clearDisplay(0);
+            break;
         case 1:
             dotMatrix.setRow(0, 0, B01100110);
             dotMatrix.setRow(0, 1, B11111111);
