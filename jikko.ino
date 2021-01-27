@@ -309,6 +309,7 @@ void parseData()
         }
         else
         {
+            setUltrasonicMode(false);
             digitals[port] = 0;
         }
     }
@@ -666,6 +667,46 @@ void runSet(int device)
             dotMatrix.setRow(0, 5, B00001000);
             dotMatrix.setRow(0, 6, B00000000);
             dotMatrix.setRow(0, 7, B00000000);
+            break;
+        case 7:
+            dotMatrix.setRow(0, 0, B00000000);
+            dotMatrix.setRow(0, 1, B01000010);
+            dotMatrix.setRow(0, 2, B10100101);
+            dotMatrix.setRow(0, 3, B00000000);
+            dotMatrix.setRow(0, 4, B00000000);
+            dotMatrix.setRow(0, 5, B01000010);
+            dotMatrix.setRow(0, 6, B00111100);
+            dotMatrix.setRow(0, 7, B00000000);
+            break;
+        case 8:
+            dotMatrix.setRow(0, 0, B00000000);
+            dotMatrix.setRow(0, 1, B00000000);
+            dotMatrix.setRow(0, 2, B11100111);
+            dotMatrix.setRow(0, 3, B01000010);
+            dotMatrix.setRow(0, 4, B01000010);
+            dotMatrix.setRow(0, 5, B00011000);
+            dotMatrix.setRow(0, 6, B00100100);
+            dotMatrix.setRow(0, 7, B00000000);
+            break;
+        case 9:
+            dotMatrix.setRow(0, 0, B10000001);
+            dotMatrix.setRow(0, 1, B01000010);
+            dotMatrix.setRow(0, 2, B00100100);
+            dotMatrix.setRow(0, 3, B00000000);
+            dotMatrix.setRow(0, 4, B00000000);
+            dotMatrix.setRow(0, 5, B00111100);
+            dotMatrix.setRow(0, 6, B01111110);
+            dotMatrix.setRow(0, 7, B01111110);
+            break;
+        case 10:
+            dotMatrix.setRow(0, 0, B00000000);
+            dotMatrix.setRow(0, 1, B01000010);
+            dotMatrix.setRow(0, 2, B00100100);
+            dotMatrix.setRow(0, 3, B01000010);
+            dotMatrix.setRow(0, 4, B00000000);
+            dotMatrix.setRow(0, 5, B00111100);
+            dotMatrix.setRow(0, 6, B00100100);
+            dotMatrix.setRow(0, 7, B00011000);
             break;
         }
     }
