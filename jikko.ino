@@ -157,6 +157,7 @@ void initNeo()
 { // 네오픽셀 초기화
     strip.begin();
     strip.show();
+    strip.show();
 }
 
 void initLCD()
@@ -389,6 +390,7 @@ void runSet(int device)
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
         strip.show();
+        strip.show();
     }
     break;
     case NEOPIXELBRIGHT:
@@ -412,12 +414,14 @@ void runSet(int device)
             strip.setPixelColor(2, 0, 0, 0);
             strip.setPixelColor(3, 0, 0, 0);
             strip.show();
+            strip.show();
             delay(50);
             break;
         }
         else
         {
             strip.setPixelColor(num, r, g, b);
+            strip.show();
             strip.show();
         }
     }
@@ -434,6 +438,7 @@ void runSet(int device)
         strip.setPixelColor(3, r, g, b);
 
         strip.show();
+        strip.show();
     }
     break;
     case NEOPIXELCLEAR:
@@ -443,6 +448,7 @@ void runSet(int device)
         strip.setPixelColor(1, 0, 0, 0);
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
+        strip.show();
         strip.show();
     }
     break;
