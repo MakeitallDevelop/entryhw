@@ -241,7 +241,8 @@ unsigned char readBuffer(int index)
  * SET/MODULE인 경우 runSet/runMoudle 호출
  * 
  * Buffer
- * 0xff 0x55 0xff textLen action device port
+ * 0xff 0x55 bufLen sensorIdx actionType device port
+ *  0    1     2        3          4       5      6
  * **/
 void parseData()
 {
