@@ -23,6 +23,8 @@
 #include <Adafruit_NeoPixel.h>
 //도트 매트릭스 라이브러리
 #include <LedControl.h>
+//로드셀 라이브러리
+#include <HX711.h>
 
 // 핀 설정
 #define ALIVE 0
@@ -54,6 +56,9 @@
 #define MP3INIT 30
 #define MP3PLAY1 31
 #define MP3VOL 33
+#define LOADINIT 35
+#define LOADSCALE 36
+#define LOADVALUE 37
 
 // State Constant
 #define GET 1
@@ -100,6 +105,10 @@ int tx = 10;
 int rx = 11;
 int vol = 15;
 
+//로드셀 포트
+int dout = 6;
+int sck = 7;
+
 //서보
 Servo servos[8];
 Servo sv;
@@ -114,6 +123,9 @@ SoftwareSerial MP3Module = SoftwareSerial(tx, rx);
 DFRobotDFPlayerMini MP3Player;
 //도트매트릭스
 LedControl dotMatrix = LedControl(dinPin, clkPin, csPin, 1);
+//로드셀
+HX711 scale(dout, sck);
+int calibration_factor = 20000;
 
 // Buffer
 char buffer[52];
@@ -132,6 +144,7 @@ boolean isStart = false;
 boolean isUltrasonic = false;
 boolean isDHThumi = false;
 boolean isDHTtemp = false;
+boolean isLoad = false;
 
 // End Public Value
 
@@ -310,6 +323,12 @@ void parseData()
             isDHTtemp = true;
             dhtPin = readBuffer(6);
             digitals[dhtPin] = 1;
+        }
+        else if (device == LOADVALUE)
+        {
+            isLoad = true;
+            digitals[dout] = 1;
+            digitals[sck] = 1;
         }
         else if (port == trigPin || port == echoPin)
         { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우
@@ -761,6 +780,28 @@ void runSet(int device)
         vol = readBuffer(9);
     }
     break;
+    case LOADINIT:
+    {
+        dout = readBuffer(7);
+        sck = readBuffer(9);
+        setPortWritable(dout);
+        setPortWritable(sck);
+        //받아온 값으로 포트 재설정
+        scale = HX711(dout, sck);
+    }
+    break;
+    case LOADSCALE:
+    {
+        calibration_factor = readBuffer(7);
+        scale.set_scale(calibration_factor);
+        scale.tare();
+    }
+    break;
+    case LOADVALUE:
+    {
+
+    }
+    break;
     case SERVO:
     {
         setPortWritable(pin);
@@ -873,6 +914,12 @@ void sendPinValues()
         sendDHT();
         callOK();
     }
+    //로드셀 센서 값 전송
+    if (isLoad)
+    {
+        sendLoad();
+        callOK();
+    }
 }
 
 void setUltrasonicMode(boolean mode)
@@ -906,6 +953,21 @@ void sendDHT()
         sendFloat(fHumid);
         writeSerial(DHTHUMI);
         writeEnd();
+    }
+}
+void sendLoad()
+{
+    float load_value = scale.get_units();
+    
+    delay(50);
+    if (isLoad)
+    {
+        writeHead();       //읽어온 값 시리얼 전송 시작
+        sendFloat(load_value); //float 시리얼 전송
+        writeSerial(dout);
+        writeSerial(sck);
+        writeSerial(LOADVALUE);
+        writeEnd(); //줄바꿈
     }
 }
 
