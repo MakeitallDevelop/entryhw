@@ -34,6 +34,7 @@ function Module() {
     LOADINIT: 35,
     LOADSCALE: 36,
     LOADVALUE: 37,
+    DUST: 38,
   };
 
   this.actionTypes = {
@@ -53,6 +54,7 @@ function Module() {
 
   this.sensorData = {
     ULTRASONIC: 0,
+    DUST: 0,
     DHTTEMP: 0,
     DHTHUMI: 0,
     LOADVALUE: 0,
@@ -219,39 +221,40 @@ Module.prototype.handleRemoteData = function (handler) {
 };
 
 Module.prototype.isRecentData = function (port, type, data) {
- var that = this;
-    var isRecent = false;
+  var that = this;
+  var isRecent = false;
 
-    if(type == this.sensorTypes.ULTRASONIC) {
-        var portString = port.toString();
-        var isGarbageClear = false;
-        Object.keys(this.recentCheckData).forEach(function (key) {
-            var recent = that.recentCheckData[key];
-            if(key === portString) {
-                
-            }
-            if(key !== portString && recent.type == that.sensorTypes.ULTRASONIC) {
-                delete that.recentCheckData[key];
-                isGarbageClear = true;
-            }
-        });
+  if (type == this.sensorTypes.ULTRASONIC) {
+    var portString = port.toString();
+    var isGarbageClear = false;
+    Object.keys(this.recentCheckData).forEach(function (key) {
+      var recent = that.recentCheckData[key];
+      if (key === portString) {
+      }
+      if (key !== portString && recent.type == that.sensorTypes.ULTRASONIC) {
+        delete that.recentCheckData[key];
+        isGarbageClear = true;
+      }
+    });
 
-        if((port in this.recentCheckData && isGarbageClear) || !(port in this.recentCheckData)) {
-            isRecent = false;
-        } else {
-            isRecent = true;
-        }
-        
-    } else if (port in this.recentCheckData && type != this.sensorTypes.TONE) {
-        if (
-            this.recentCheckData[port].type === type &&
-            this.recentCheckData[port].data === data
-        ) {
-            isRecent = true;
-        }
+    if (
+      (port in this.recentCheckData && isGarbageClear) ||
+      !(port in this.recentCheckData)
+    ) {
+      isRecent = false;
+    } else {
+      isRecent = true;
     }
+  } else if (port in this.recentCheckData && type != this.sensorTypes.TONE) {
+    if (
+      this.recentCheckData[port].type === type &&
+      this.recentCheckData[port].data === data
+    ) {
+      isRecent = true;
+    }
+  }
 
-    return isRecent;
+  return isRecent;
 };
 
 Module.prototype.requestLocalData = function () {
@@ -330,6 +333,10 @@ Module.prototype.handleLocalData = function (data) {
         self.sensorData.DHTHUMI = value;
         break;
       }
+      case self.sensorTypes.DUST: {
+        self.sensorData.DUST = value;
+        break;
+      }
       case self.sensorTypes.ULTRASONIC: {
         self.sensorData.ULTRASONIC = value;
         break;
@@ -398,6 +405,18 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       port[1],
       10,
     ]);
+  } else if (device == this.sensorTypes.DUST) {
+    buffer = new Buffer([
+      255,
+      85,
+      6,
+      sensorIdx,
+      this.actionTypes.GET,
+      device,
+      port[0],
+      port[1],
+      10,
+    ]);
   } else if (device == this.sensorTypes.DHTTEMP) {
     buffer = new Buffer([
       255,
@@ -431,8 +450,7 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       port,
       10,
     ]);
-  } 
-  else if (!data) {
+  } else if (!data) {
     buffer = new Buffer([
       255,
       85,
@@ -571,7 +589,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
     case this.sensorTypes.NEOPIXELINIT: {
-      console.log('NEOPIXELINIT');
+      console.log("NEOPIXELINIT");
       value.writeInt16LE(data);
       buffer = new Buffer([
         255,
@@ -971,7 +989,6 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
   }
-  
 
   return buffer;
 };
@@ -1004,6 +1021,6 @@ Module.prototype.reset = function () {
   this.sensorData.PULSEIN = {};
 };
 
-Module.prototype.lostController = function() {};
+Module.prototype.lostController = function () {};
 
 module.exports = new Module();

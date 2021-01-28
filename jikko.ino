@@ -59,6 +59,7 @@
 #define LOADINIT 35
 #define LOADSCALE 36
 #define LOADVALUE 37
+#define DUST 38
 
 // State Constant
 #define GET 1
@@ -109,6 +110,11 @@ int vol = 15;
 int dout = 6;
 int sck = 7;
 
+//미세먼지 포트
+int dustDPin = 7;
+int dustAPin = 0;
+float preVal;
+
 //서보
 Servo servos[8];
 Servo sv;
@@ -140,8 +146,9 @@ uint8_t command_index = 0;
 
 boolean isStart = false;
 
-//GET&SET을 동시에 하는 초음파, DHT 센서를 위한 플래그
+//GET&SET을 동시에 하는 초음파, DHT 등의 센서를 위한 플래그
 boolean isUltrasonic = false;
+boolean isDust = false;
 boolean isDHThumi = false;
 boolean isDHTtemp = false;
 boolean isLoad = false;
@@ -329,6 +336,17 @@ void parseData()
             isLoad = true;
             digitals[dout] = 1;
             digitals[sck] = 1;
+        }
+        else if (device == DUST)
+        {
+            isDust = true;
+            dustDPin = readBuffer(6);
+            dustAPin = readBuffer(7);
+            digitals[dustDPin] = 1;
+            analogs[dustAPin] = 1;
+            //digitals[dustAPin] = 1;
+            pinMode(dustDPin, OUTPUT);
+            pinMode(A0 + dustAPin, INPUT);
         }
         else if (port == trigPin || port == echoPin)
         { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우
@@ -799,7 +817,6 @@ void runSet(int device)
     break;
     case LOADVALUE:
     {
-
     }
     break;
     case SERVO:
@@ -920,6 +937,12 @@ void sendPinValues()
         sendLoad();
         callOK();
     }
+    //미세먼지 센서 값 전송
+    if (isDust)
+    {
+        sendDust();
+        callOK();
+    }
 }
 
 void setUltrasonicMode(boolean mode)
@@ -958,17 +981,57 @@ void sendDHT()
 void sendLoad()
 {
     float load_value = scale.get_units();
-    
+
     delay(50);
     if (isLoad)
     {
-        writeHead();       //읽어온 값 시리얼 전송 시작
+        writeHead();           //읽어온 값 시리얼 전송 시작
         sendFloat(load_value); //float 시리얼 전송
         writeSerial(dout);
         writeSerial(sck);
         writeSerial(LOADVALUE);
         writeEnd(); //줄바꿈
     }
+}
+
+void sendDust()
+{
+    float dust = 0;
+    int SampleTime = 30;
+    int samplingTime = 280;
+    int deltaTime = 40;
+    int sleepTime = 9680;
+    float voMeasured = 0;
+    float calcVoltage = 0;
+    float dustDensity = 0;
+
+    for (int i = 0; i < SampleTime; i++)
+    {
+
+        digitalWrite(dustDPin, LOW); // power on the LED 0.028초부터 led가 가장 밝음으로 최소샘플링 타임으로 결정
+        delayMicroseconds(samplingTime);
+        voMeasured = analogRead(dustAPin); // read the dust value
+        delayMicroseconds(deltaTime);
+        digitalWrite(dustDPin, HIGH); // turn the LED off
+        delayMicroseconds(sleepTime);
+        //////////////////////////////////////////// dust vlaue 받아오기
+        calcVoltage = voMeasured * (5.0 / 1024.0);
+        dustDensity = calcVoltage / 0.005; //(0.17 * calcVoltage - 0.1) * 1000;
+        /////////////////////value 의 미세한 변화를 수식으로 먼지량으로 변환
+        if (dustDensity < 0)
+        { // value 의 값이 마이너스일경우 오류 임으로 0을 대입
+            dustDensity = 0;
+        }
+        dust += dustDensity;
+    }
+
+    dust = dust / SampleTime; // 센싱한값의 평균을 return
+    writeHead();
+    sendFloat(dust);
+    writeSerial(dustDPin);
+    writeSerial(dustAPin);
+    writeSerial(DUST);
+    writeEnd();
 }
 
 void sendUltrasonic()
