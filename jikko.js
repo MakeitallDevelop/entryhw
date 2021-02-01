@@ -35,7 +35,11 @@ function Module() {
     LOADSCALE: 36,
     LOADVALUE: 37,
     DUST: 38,
-
+    JOYINIT: 39,
+    JOYX: 40,
+    JOYY: 41,
+    JOYZ: 42,
+    JOYMOVE: 43,
     RFIDINIT: 44,
     RFIDTAP: 45,
     RFIDVALUE: 46,
@@ -58,12 +62,14 @@ function Module() {
 
   this.sensorData = {
     ULTRASONIC: 0,
-    DUST: 0,
     DHTTEMP: 0,
     DHTHUMI: 0,
     LOADVALUE: 0,
     RFIDTAP: 0,
     RFIDVALUE: 0,
+    JOYX: 0,
+    JOYY: 0,
+    JOYZ: 0,
     DIGITAL: {
       0: 0,
       1: 0,
@@ -340,10 +346,6 @@ Module.prototype.handleLocalData = function (data) {
         self.sensorData.DHTHUMI = value;
         break;
       }
-      case self.sensorTypes.DUST: {
-        self.sensorData.DUST = value;
-        break;
-      }
       case self.sensorTypes.ULTRASONIC: {
         self.sensorData.ULTRASONIC = value;
         break;
@@ -424,18 +426,6 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       10,
     ]);
   } else if (device == this.sensorTypes.ULTRASONIC) {
-    buffer = new Buffer([
-      255,
-      85,
-      6,
-      sensorIdx,
-      this.actionTypes.GET,
-      device,
-      port[0],
-      port[1],
-      10,
-    ]);
-  } else if (device == this.sensorTypes.DUST) {
     buffer = new Buffer([
       255,
       85,
@@ -722,6 +712,31 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, dummy]);
+      break;
+    }
+    case this.sensorTypes.JOYINIT: {
+      const port1 = new Buffer(2);
+      const port2 = new Buffer(2);
+      const port3 = new Buffer(2);
+      if ($.isPlainObject(data)) {
+        port1.writeInt16LE(data.port1);
+        port2.writeInt16LE(data.port2);
+        port3.writeInt16LE(data.port3);
+      } else {
+        port1.writeInt16LE(0);
+        port2.writeInt16LE(0);
+        port3.writeInt16LE(0);
+      }
+      buffer = new Buffer([
+        255,
+        85,
+        10,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, port1, port2, port3, dummy]);
       break;
     }
     case this.sensorTypes.DOTMATRIXINIT: {

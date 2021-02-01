@@ -62,6 +62,11 @@
 #define LOADSCALE 36
 #define LOADVALUE 37
 #define DUST 38
+#define JOYINIT 39
+#define JOYX 40
+#define JOYY 41
+#define JOYZ 42
+#define JOYMOVE 43
 
 #define RFIDINIT 44
 #define RFIDTAP 45
@@ -1029,7 +1034,7 @@ void sendDHT()
 }
 void sendLoad()
 {
-    float load_value = scale.get_units();
+    float load_value = scale.get_units() / 2.205;
 
     delay(50);
     if (isLoad)
