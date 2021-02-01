@@ -25,7 +25,9 @@
 #include <LedControl.h>
 //로드셀 라이브러리
 #include <HX711.h>
-
+// RFID 라이브러리
+#include <SPI.h>
+#include <MFRC522.h>
 // 핀 설정
 #define ALIVE 0
 #define DIGITAL 1
@@ -60,6 +62,10 @@
 #define LOADSCALE 36
 #define LOADVALUE 37
 #define DUST 38
+
+#define RFIDINIT 44
+#define RFIDTAP 45
+#define RFIDVALUE 46
 
 // State Constant
 #define GET 1
@@ -115,6 +121,10 @@ int dustDPin = 7;
 int dustAPin = 0;
 float preVal;
 
+//RFID 포트
+int SS_PIN = 10;
+int RST_PIN = 9;
+
 //서보
 Servo servos[8];
 Servo sv;
@@ -132,6 +142,8 @@ LedControl dotMatrix = LedControl(dinPin, clkPin, csPin, 1);
 //로드셀
 HX711 scale(dout, sck);
 int calibration_factor = 20000;
+//RFID
+MFRC522 rfid(SS_PIN, RST_PIN); // Instance of the class
 
 // Buffer
 char buffer[52];
@@ -152,6 +164,8 @@ boolean isDust = false;
 boolean isDHThumi = false;
 boolean isDHTtemp = false;
 boolean isLoad = false;
+boolean isRFID = false;
+boolean isRFIDtap = false;
 
 // End Public Value
 
@@ -347,6 +361,14 @@ void parseData()
             //digitals[dustAPin] = 1;
             pinMode(dustDPin, OUTPUT);
             pinMode(A0 + dustAPin, INPUT);
+        }
+        else if (device == RFIDTAP)
+        {
+            isRFIDtap = true;
+        }
+        else if (device == RFIDVALUE)
+        {
+            isRFID = true;
         }
         else if (port == trigPin || port == echoPin)
         { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우
@@ -815,10 +837,6 @@ void runSet(int device)
         scale.tare();
     }
     break;
-    case LOADVALUE:
-    {
-    }
-    break;
     case SERVO:
     {
         setPortWritable(pin);
@@ -831,6 +849,25 @@ void runSet(int device)
         }
     }
     break;
+    case RFIDINIT:
+    {
+        SS_PIN = readBuffer(7);
+        RST_PIN = readBuffer(9);
+
+        digitals[SS_PIN] = 1;
+        digitals[RST_PIN] = 1;
+        digitals[11] = 1;
+        digitals[12] = 1;
+        digitals[13] = 1;
+        //받아온 값으로 포트 재설정
+        rfid = MFRC522(SS_PIN, RST_PIN);
+        SPI.begin();     // Init SPI bus
+        rfid.PCD_Init(); // Init MFRC522
+        // for (byte i = 0; i < 6; i++)
+        // {
+        //     key.keyByte[i] = 0xFF;
+        // }
+    }
     case TIMER:
     {
         lastTime = millis() / 1000.0;
@@ -943,6 +980,18 @@ void sendPinValues()
         sendDust();
         callOK();
     }
+
+    if (isRFID)
+    {
+        sendRFID();
+        callOK();
+    }
+
+    if (isRFIDtap)
+    {
+        sendRFIDtap();
+        callOK();
+    }
 }
 
 void setUltrasonicMode(boolean mode)
@@ -1032,6 +1081,48 @@ void sendDust()
     writeSerial(dustAPin);
     writeSerial(DUST);
     writeEnd();
+}
+
+void sendRFID()
+{
+    while (1)
+    {
+        SPI.begin();     // Init SPI bus
+        rfid.PCD_Init(); // Init MFRC522
+
+        String hexstring = "";
+
+        if (!rfid.PICC_IsNewCardPresent())
+            continue;
+        if (!rfid.PICC_ReadCardSerial())
+            continue;
+
+        for (byte i = 0; i < 4; i++)
+        {
+            hexstring += String(rfid.uid.uidByte[i], HEX);
+        }
+
+        writeHead();
+        sendString(hexstring);
+        writeSerial(SS_PIN);
+        writeSerial(RST_PIN);
+        writeSerial(RFIDVALUE);
+        writeEnd();
+        break;
+    }
+}
+
+void sendRFIDtap()
+{
+    SPI.begin();                             // Init SPI bus
+    rfid.PCD_Init();                         // Init MFRC522
+    writeHead();                             //읽어온 값 시리얼 전송 시작
+    sendFloat(rfid.PICC_IsNewCardPresent()); //float 시리얼 전송
+
+    writeSerial(SS_PIN);
+    writeSerial(RST_PIN);
+    writeSerial(RFIDTAP);
+    writeEnd(); //줄바꿈
 }
 
 void sendUltrasonic()
