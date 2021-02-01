@@ -35,6 +35,11 @@ function Module() {
     LOADSCALE: 36,
     LOADVALUE: 37,
     DUST: 38,
+    JOYINIT: 39,
+    JOYX: 40,
+    JOYY: 41,
+    JOYZ: 42,
+    JOYMOVE: 43,
   };
 
   this.actionTypes = {
@@ -54,10 +59,12 @@ function Module() {
 
   this.sensorData = {
     ULTRASONIC: 0,
-    DUST: 0,
     DHTTEMP: 0,
     DHTHUMI: 0,
     LOADVALUE: 0,
+    JOYX: 0,
+    JOYY: 0,
+    JOYZ: 0,
     DIGITAL: {
       0: 0,
       1: 0,
@@ -221,40 +228,39 @@ Module.prototype.handleRemoteData = function (handler) {
 };
 
 Module.prototype.isRecentData = function (port, type, data) {
-  var that = this;
-  var isRecent = false;
+ var that = this;
+    var isRecent = false;
 
-  if (type == this.sensorTypes.ULTRASONIC) {
-    var portString = port.toString();
-    var isGarbageClear = false;
-    Object.keys(this.recentCheckData).forEach(function (key) {
-      var recent = that.recentCheckData[key];
-      if (key === portString) {
-      }
-      if (key !== portString && recent.type == that.sensorTypes.ULTRASONIC) {
-        delete that.recentCheckData[key];
-        isGarbageClear = true;
-      }
-    });
+    if(type == this.sensorTypes.ULTRASONIC) {
+        var portString = port.toString();
+        var isGarbageClear = false;
+        Object.keys(this.recentCheckData).forEach(function (key) {
+            var recent = that.recentCheckData[key];
+            if(key === portString) {
+                
+            }
+            if(key !== portString && recent.type == that.sensorTypes.ULTRASONIC) {
+                delete that.recentCheckData[key];
+                isGarbageClear = true;
+            }
+        });
 
-    if (
-      (port in this.recentCheckData && isGarbageClear) ||
-      !(port in this.recentCheckData)
-    ) {
-      isRecent = false;
-    } else {
-      isRecent = true;
+        if((port in this.recentCheckData && isGarbageClear) || !(port in this.recentCheckData)) {
+            isRecent = false;
+        } else {
+            isRecent = true;
+        }
+        
+    } else if (port in this.recentCheckData && type != this.sensorTypes.TONE) {
+        if (
+            this.recentCheckData[port].type === type &&
+            this.recentCheckData[port].data === data
+        ) {
+            isRecent = true;
+        }
     }
-  } else if (port in this.recentCheckData && type != this.sensorTypes.TONE) {
-    if (
-      this.recentCheckData[port].type === type &&
-      this.recentCheckData[port].data === data
-    ) {
-      isRecent = true;
-    }
-  }
 
-  return isRecent;
+    return isRecent;
 };
 
 Module.prototype.requestLocalData = function () {
@@ -333,10 +339,6 @@ Module.prototype.handleLocalData = function (data) {
         self.sensorData.DHTHUMI = value;
         break;
       }
-      case self.sensorTypes.DUST: {
-        self.sensorData.DUST = value;
-        break;
-      }
       case self.sensorTypes.ULTRASONIC: {
         self.sensorData.ULTRASONIC = value;
         break;
@@ -405,18 +407,6 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       port[1],
       10,
     ]);
-  } else if (device == this.sensorTypes.DUST) {
-    buffer = new Buffer([
-      255,
-      85,
-      6,
-      sensorIdx,
-      this.actionTypes.GET,
-      device,
-      port[0],
-      port[1],
-      10,
-    ]);
   } else if (device == this.sensorTypes.DHTTEMP) {
     buffer = new Buffer([
       255,
@@ -450,7 +440,8 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       port,
       10,
     ]);
-  } else if (!data) {
+  }
+  else if (!data) {
     buffer = new Buffer([
       255,
       85,
@@ -589,7 +580,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
     case this.sensorTypes.NEOPIXELINIT: {
-      console.log("NEOPIXELINIT");
+      console.log('NEOPIXELINIT');
       value.writeInt16LE(data);
       buffer = new Buffer([
         255,
@@ -681,6 +672,31 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, dummy]);
+      break;
+    }
+    case this.sensorTypes.JOYINIT: {
+      const port1 = new Buffer(2);
+      const port2 = new Buffer(2);
+      const port3 = new Buffer(2);
+      if ($.isPlainObject(data)) {
+        port1.writeInt16LE(data.port1);
+        port2.writeInt16LE(data.port2);
+        port3.writeInt16LE(data.port3);
+      } else {
+        port1.writeInt16LE(0);
+        port2.writeInt16LE(0);
+        port3.writeInt16LE(0);
+      }
+      buffer = new Buffer([
+        255,
+        85,
+        10,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, port1, port2, port3, dummy]);
       break;
     }
     case this.sensorTypes.DOTMATRIXINIT: {
@@ -989,6 +1005,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
   }
+  
 
   return buffer;
 };
@@ -1021,6 +1038,6 @@ Module.prototype.reset = function () {
   this.sensorData.PULSEIN = {};
 };
 
-Module.prototype.lostController = function () {};
+Module.prototype.lostController = function() {};
 
 module.exports = new Module();
