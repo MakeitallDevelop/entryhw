@@ -25,6 +25,8 @@
 #include <LedControl.h>
 //로드셀 라이브러리
 #include <HX711.h>
+//스텝모터 라이브러리
+#include <Stepper.h>
 
 // 핀 설정
 #define ALIVE 0
@@ -65,6 +67,12 @@
 #define JOYY 41
 #define JOYZ 42
 #define JOYMOVE 43
+
+#define STEPINIT 47
+#define STEPSPEED 48
+#define STEPROTATE 49
+#define STEPROTATE2 50
+#define STEPROTATE3 51
 
 // State Constant
 #define GET 1
@@ -120,6 +128,14 @@ int dustDPin = 7;
 int dustAPin = 0;
 float preVal;
 
+//스텝모터 포트
+int in1 = 8;
+int in2 = 9;
+int in3 = 10;
+int in4 = 11;
+int stepSpeed = 14;
+int stepsPerRevolution = 2048; 
+
 //서보
 Servo servos[8];
 Servo sv;
@@ -137,6 +153,8 @@ LedControl dotMatrix = LedControl(dinPin, clkPin, csPin, 1);
 //로드셀
 HX711 scale(dout, sck);
 int calibration_factor = 20000;
+//스텝모터
+Stepper myStepper = Stepper(stepsPerRevolution, in4, in2, in3, in1);
 
 // Buffer
 char buffer[52];
@@ -498,6 +516,105 @@ void runSet(int device)
         strip.setPixelColor(2, 0, 0, 0);
         strip.setPixelColor(3, 0, 0, 0);
         strip.show();
+    }
+    break;
+    case STEPINIT:
+    {
+        in1 = readBuffer(7);
+        in2 = readBuffer(9);
+        in3 = readBuffer(11);
+        in4 = readBuffer(13);
+
+        setPortWritable(in1);
+        setPortWritable(in2);
+        setPortWritable(in3);
+        setPortWritable(in4);
+
+        //받아온 값으로 포트 재설정
+        myStepper = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+    }
+    break;
+    case STEPSPEED:
+    {
+        stepSpeed = readBuffer(7);
+    }
+    break;
+    case STEPROTATE:
+    {
+        int dir = readBuffer(7);
+        float num = readFloat(9);
+
+        if (dir == 0 && num == 0)
+        {
+            digitalWrite(in1, LOW);
+            digitalWrite(in2, LOW);
+            digitalWrite(in3, LOW);
+            digitalWrite(in4, LOW);
+
+            break;
+        }
+
+        if(dir == 1){
+            myStepper.setSpeed(stepSpeed);
+            myStepper.step(num);
+        }
+        else if(dir == 2){
+            myStepper.setSpeed(stepSpeed);
+            myStepper.step((-1) * num);
+        }
+    }
+    break;
+    case STEPROTATE2:
+    {
+        int dir = readBuffer(7);
+        float num = readFloat(9);
+
+        if (dir == 0 && num == 0)
+        {
+            digitalWrite(in1, LOW);
+            digitalWrite(in2, LOW);
+            digitalWrite(in3, LOW);
+            digitalWrite(in4, LOW);
+
+            break;
+        }
+
+        if(dir == 1){
+            myStepper.setSpeed(stepSpeed);
+            myStepper.step(num);
+        }
+        else if(dir == 2){
+            myStepper.setSpeed(stepSpeed);
+            myStepper.step((-1) * num);
+        }
+    }
+    break;
+    case STEPROTATE3:
+    {
+        int dir = readBuffer(7);
+        int sec = readBuffer(9);
+        float st = 0;
+
+        if (dir == 0 && sec == 0)
+        {
+            digitalWrite(in1, LOW);
+            digitalWrite(in2, LOW);
+            digitalWrite(in3, LOW);
+            digitalWrite(in4, LOW);
+
+            break;
+        }
+  
+        st = float(float(sec) * float(stepSpeed) / 60) * 2048;
+
+        if(dir == 1){
+            myStepper.setSpeed(stepSpeed);
+            myStepper.step(st);
+        }
+        else if(dir == 2){
+            myStepper.setSpeed(stepSpeed);
+            myStepper.step((-1) * st);
+        }
     }
     break;
     case DOTMATRIXINIT:

@@ -40,6 +40,12 @@ function Module() {
     JOYY: 41,
     JOYZ: 42,
     JOYMOVE: 43,
+
+    STEPINIT: 47,
+    STEPSPEED: 48,
+    STEPROTATE: 49,
+    STEPROTATE2: 50,
+    STEPROTATE3: 51,
   };
 
   this.actionTypes = {
@@ -697,6 +703,127 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, port1, port2, port3, dummy]);
+      break;
+    }
+    case this.sensorTypes.STEPINIT: {
+      const port1 = new Buffer(2);
+      const port2 = new Buffer(2);
+      const port3 = new Buffer(2);
+      const port4 = new Buffer(2);
+      if ($.isPlainObject(data)) {
+        port1.writeInt16LE(data.port1);
+        port2.writeInt16LE(data.port2);
+        port3.writeInt16LE(data.port3);
+        port4.writeInt16LE(data.port4);
+      } else {
+        port1.writeInt16LE(0);
+        port2.writeInt16LE(0);
+        port3.writeInt16LE(0);
+        port4.writeInt16LE(0);
+      }
+      buffer = new Buffer([
+        255,
+        85,
+        12,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, port1, port2, port3, port4, dummy]);
+      break;
+    }
+    case this.sensorTypes.STEPSPEED: {
+      value.writeInt16LE(data);
+      buffer = new Buffer([
+        255,
+        85,
+        6,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, value, dummy]);
+      break;
+    }
+    case this.sensorTypes.STEPROTATE: {
+      const dir = new Buffer(2);
+      const num = new Buffer(4);
+      if ($.isPlainObject(data)) {
+        dir.writeInt16LE(data.dir);
+        num.writeFloatLE(data.num);
+      } else {
+        dir.writeInt16LE(0);
+        num.writeFloatLE(0);
+      }
+      buffer = new Buffer([
+        255,
+        85,
+        10,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, dir, num, dummy]);
+      break;
+    }
+    case this.sensorTypes.STEPROTATE2: {
+      const dir = new Buffer(2);
+      const num = new Buffer(4);
+      if ($.isPlainObject(data)) {
+        dir.writeInt16LE(data.dir);
+        num.writeFloatLE(data.num);
+      } else {
+        dir.writeInt16LE(0);
+        num.writeFloatLE(0);
+      }
+      buffer = new Buffer([
+        255,
+        85,
+        10,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, dir, num, dummy]);
+      break;
+    }
+    case this.sensorTypes.STEPROTATE3: {
+      const dir = new Buffer(2);
+      const sec = new Buffer(2);
+      if ($.isPlainObject(data)) {
+        dir.writeInt16LE(data.dir);
+        sec.writeInt16LE(data.sec);
+      } else {
+        dir.writeInt16LE(0);
+        sec.writeInt16LE(0);
+      }
+      buffer = new Buffer([
+        255,
+        85,
+        8,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, dir, sec, dummy]);
+      break;
+    }
+    case this.sensorTypes.STEPSTOP: {
+      buffer = new Buffer([
+        255,
+        85,
+        4,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, dummy]);
       break;
     }
     case this.sensorTypes.DOTMATRIXINIT: {
