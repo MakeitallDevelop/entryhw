@@ -48,7 +48,6 @@ function Module() {
     STEPROTATE: 49,
     STEPROTATE2: 50,
     STEPROTATE3: 51,
-
   };
 
   this.actionTypes = {
@@ -73,6 +72,7 @@ function Module() {
     LOADVALUE: 0,
     RFIDTAP: 0,
     RFIDVALUE: 0,
+    DUST: 0,
     JOYX: 0,
     JOYY: 0,
     JOYZ: 0,
@@ -356,6 +356,10 @@ Module.prototype.handleLocalData = function (data) {
         self.sensorData.ULTRASONIC = value;
         break;
       }
+      case self.sensorTypes.DUST: {
+        self.sensorData.DUST = value;
+        break;
+      }
       case self.sensorTypes.TIMER: {
         self.sensorData.TIMER = value;
         break;
@@ -432,6 +436,18 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       10,
     ]);
   } else if (device == this.sensorTypes.ULTRASONIC) {
+    buffer = new Buffer([
+      255,
+      85,
+      6,
+      sensorIdx,
+      this.actionTypes.GET,
+      device,
+      port[0],
+      port[1],
+      10,
+    ]);
+  } else if (device == this.sensorTypes.DUST) {
     buffer = new Buffer([
       255,
       85,
