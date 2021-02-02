@@ -1153,17 +1153,17 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
     case this.sensorTypes.LOADSCALE: {
-      const num = new Buffer(2);
+      const num = new Buffer(4);
       if ($.isPlainObject(data)) {
-        num.writeInt16LE(data.num);
+        num.writeFloatLE(data.num);
       } else {
-        num.writeInt16LE(0);
+        num.writeFloatLE(0);
       }
       console.log(num);
       buffer = new Buffer([
         255,
         85,
-        6,
+        8,
         sensorIdx,
         this.actionTypes.SET,
         device,

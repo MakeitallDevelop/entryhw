@@ -965,7 +965,7 @@ void runSet(int device)
     break;
     case LOADSCALE:
     {
-        calibration_factor = readBuffer(7);
+        calibration_factor = readFloat(7);
         scale.set_scale(calibration_factor);
         scale.tare();
     }
