@@ -413,7 +413,7 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
         10,
       ]);
     }
-    console.log(buffer);
+    //console.log(buffer);
   } else if (device == this.sensorTypes.RFIDTAP) {
     buffer = new Buffer([
       255,
@@ -1032,6 +1032,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       } else {
         num.writeInt16LE(0);
       }
+      console.log(num);
       buffer = new Buffer([
         255,
         85,
@@ -1042,6 +1043,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, num, dummy]);
+
       break;
     }
     case this.sensorTypes.RFIDINIT: {

@@ -149,7 +149,7 @@ HX711 scale(dout, sck);
 int calibration_factor = 20000;
 //RFID
 MFRC522 rfid(SS_PIN, RST_PIN); // Instance of the class
-
+String lastCard = "";
 // Buffer
 char buffer[52];
 unsigned char prevc = 0;
@@ -370,10 +370,20 @@ void parseData()
         else if (device == RFIDTAP)
         {
             isRFIDtap = true;
+            digitals[SS_PIN] = 1;
+            digitals[RST_PIN] = 1;
+            digitals[11] = 1;
+            digitals[12] = 1;
+            digitals[13] = 1;
         }
         else if (device == RFIDVALUE)
         {
             isRFID = true;
+            digitals[SS_PIN] = 1;
+            digitals[RST_PIN] = 1;
+            digitals[11] = 1;
+            digitals[12] = 1;
+            digitals[13] = 1;
         }
         else if (port == trigPin || port == echoPin)
         { //12,13번 포트를 사용하지만 초음파 센서가 아닌 경우
@@ -866,8 +876,8 @@ void runSet(int device)
         digitals[13] = 1;
         //받아온 값으로 포트 재설정
         rfid = MFRC522(SS_PIN, RST_PIN);
-        SPI.begin();     // Init SPI bus
-        rfid.PCD_Init(); // Init MFRC522
+        // SPI.begin();     // Init SPI bus
+        // rfid.PCD_Init(); // Init MFRC522
         // for (byte i = 0; i < 6; i++)
         // {
         //     key.keyByte[i] = 0xFF;
@@ -1090,37 +1100,42 @@ void sendDust()
 
 void sendRFID()
 {
-    while (1)
+    boolean flag1 = false, flag2 = false;
+    String hexstring = "";
+
+    SPI.begin();                    // Init SPI bus
+    rfid.PCD_Init(SS_PIN, RST_PIN); // Init MFRC522
+
+    if (rfid.PICC_IsNewCardPresent()) //두 조건문없으면 실행 X
+        flag1 = true;
+    if (rfid.PICC_ReadCardSerial())
+        flag2 = true;
+
+    if (flag1 && flag2)
     {
-        SPI.begin();     // Init SPI bus
-        rfid.PCD_Init(); // Init MFRC522
-
-        String hexstring = "";
-
-        if (!rfid.PICC_IsNewCardPresent())
-            continue;
-        if (!rfid.PICC_ReadCardSerial())
-            continue;
-
         for (byte i = 0; i < 4; i++)
         {
             hexstring += String(rfid.uid.uidByte[i], HEX);
         }
-
-        writeHead();
-        sendString(hexstring);
-        writeSerial(SS_PIN);
-        writeSerial(RST_PIN);
-        writeSerial(RFIDVALUE);
-        writeEnd();
-        break;
+        lastCard = hexstring;
     }
+    else
+    {
+        hexstring = "";
+    }
+
+    writeHead();
+    sendString(hexstring);
+    writeSerial(SS_PIN);
+    writeSerial(RST_PIN);
+    writeSerial(RFIDVALUE);
+    writeEnd();
 }
 
 void sendRFIDtap()
 {
     SPI.begin();                             // Init SPI bus
-    rfid.PCD_Init();                         // Init MFRC522
+    rfid.PCD_Init(SS_PIN, RST_PIN);          // Init MFRC522
     writeHead();                             //읽어온 값 시리얼 전송 시작
     sendFloat(rfid.PICC_IsNewCardPresent()); //float 시리얼 전송
 
@@ -1128,6 +1143,8 @@ void sendRFIDtap()
     writeSerial(RST_PIN);
     writeSerial(RFIDTAP);
     writeEnd(); //줄바꿈
+
+    rfid.PCD_Reset();
 }
 
 void sendUltrasonic()
