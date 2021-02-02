@@ -40,12 +40,15 @@ function Module() {
     JOYY: 41,
     JOYZ: 42,
     JOYMOVE: 43,
-
+    RFIDINIT: 44,
+    RFIDTAP: 45,
+    RFIDVALUE: 46,
     STEPINIT: 47,
     STEPSPEED: 48,
     STEPROTATE: 49,
     STEPROTATE2: 50,
     STEPROTATE3: 51,
+
   };
 
   this.actionTypes = {
@@ -68,6 +71,8 @@ function Module() {
     DHTTEMP: 0,
     DHTHUMI: 0,
     LOADVALUE: 0,
+    RFIDTAP: 0,
+    RFIDVALUE: 0,
     JOYX: 0,
     JOYY: 0,
     JOYZ: 0,
@@ -234,39 +239,40 @@ Module.prototype.handleRemoteData = function (handler) {
 };
 
 Module.prototype.isRecentData = function (port, type, data) {
- var that = this;
-    var isRecent = false;
+  var that = this;
+  var isRecent = false;
 
-    if(type == this.sensorTypes.ULTRASONIC) {
-        var portString = port.toString();
-        var isGarbageClear = false;
-        Object.keys(this.recentCheckData).forEach(function (key) {
-            var recent = that.recentCheckData[key];
-            if(key === portString) {
-                
-            }
-            if(key !== portString && recent.type == that.sensorTypes.ULTRASONIC) {
-                delete that.recentCheckData[key];
-                isGarbageClear = true;
-            }
-        });
+  if (type == this.sensorTypes.ULTRASONIC) {
+    var portString = port.toString();
+    var isGarbageClear = false;
+    Object.keys(this.recentCheckData).forEach(function (key) {
+      var recent = that.recentCheckData[key];
+      if (key === portString) {
+      }
+      if (key !== portString && recent.type == that.sensorTypes.ULTRASONIC) {
+        delete that.recentCheckData[key];
+        isGarbageClear = true;
+      }
+    });
 
-        if((port in this.recentCheckData && isGarbageClear) || !(port in this.recentCheckData)) {
-            isRecent = false;
-        } else {
-            isRecent = true;
-        }
-        
-    } else if (port in this.recentCheckData && type != this.sensorTypes.TONE) {
-        if (
-            this.recentCheckData[port].type === type &&
-            this.recentCheckData[port].data === data
-        ) {
-            isRecent = true;
-        }
+    if (
+      (port in this.recentCheckData && isGarbageClear) ||
+      !(port in this.recentCheckData)
+    ) {
+      isRecent = false;
+    } else {
+      isRecent = true;
     }
+  } else if (port in this.recentCheckData && type != this.sensorTypes.TONE) {
+    if (
+      this.recentCheckData[port].type === type &&
+      this.recentCheckData[port].data === data
+    ) {
+      isRecent = true;
+    }
+  }
 
-    return isRecent;
+  return isRecent;
 };
 
 Module.prototype.requestLocalData = function () {
@@ -312,7 +318,8 @@ Module.prototype.handleLocalData = function (data) {
       case self.sensorValueSize.STRING: {
         value = new Buffer(readData[1] + 3);
         value = readData.slice(2, readData[1] + 3);
-        value = value.toString("ascii", 0, value.length);
+        // value = value.toString('ascii', 0, value.length);
+        value = value.toString();
         break;
       }
       default: {
@@ -355,6 +362,18 @@ Module.prototype.handleLocalData = function (data) {
       }
       case self.sensorTypes.LOADVALUE: {
         self.sensorData.LOADVALUE = value;
+        break;
+      }
+      case self.sensorTypes.RFIDTAP: {
+        self.sensorData.RFIDTAP = value;
+        // console.log('RFIDTAP');
+        // console.log(value);
+        break;
+      }
+      case self.sensorTypes.RFIDVALUE: {
+        value = value.substring(0, value.length - 1); //마지막에 쓰레기값 출력X
+        self.sensorData.RFIDVALUE = value;
+        // console.log(value);
         break;
       }
       default: {
@@ -400,7 +419,18 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
         10,
       ]);
     }
-    console.log(buffer);
+    //console.log(buffer);
+  } else if (device == this.sensorTypes.RFIDTAP) {
+    buffer = new Buffer([
+      255,
+      85,
+      5,
+      sensorIdx,
+      this.actionTypes.GET,
+      device,
+      port,
+      10,
+    ]);
   } else if (device == this.sensorTypes.ULTRASONIC) {
     buffer = new Buffer([
       255,
@@ -446,8 +476,18 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       port,
       10,
     ]);
-  }
-  else if (!data) {
+  } else if (device == this.sensorTypes.RFIDVALUE) {
+    buffer = new Buffer([
+      255,
+      85,
+      5,
+      sensorIdx,
+      this.actionTypes.GET,
+      device,
+      port,
+      10,
+    ]);
+  } else if (!data) {
     buffer = new Buffer([
       255,
       85,
@@ -586,7 +626,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       break;
     }
     case this.sensorTypes.NEOPIXELINIT: {
-      console.log('NEOPIXELINIT');
+      console.log("NEOPIXELINIT");
       value.writeInt16LE(data);
       buffer = new Buffer([
         255,
@@ -1119,6 +1159,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
       } else {
         num.writeInt16LE(0);
       }
+      console.log(num);
       buffer = new Buffer([
         255,
         85,
@@ -1129,10 +1170,32 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, num, dummy]);
+
+      break;
+    }
+    case this.sensorTypes.RFIDINIT: {
+      const port1 = new Buffer(2);
+      const port2 = new Buffer(2);
+      if ($.isPlainObject(data)) {
+        port1.writeInt16LE(data.port1);
+        port2.writeInt16LE(data.port2);
+      } else {
+        port1.writeInt16LE(0);
+        port2.writeInt16LE(0);
+      }
+      buffer = new Buffer([
+        255,
+        85,
+        8,
+        sensorIdx,
+        this.actionTypes.SET,
+        device,
+        port,
+      ]);
+      buffer = Buffer.concat([buffer, port1, port2, dummy]);
       break;
     }
   }
-  
 
   return buffer;
 };
@@ -1165,6 +1228,6 @@ Module.prototype.reset = function () {
   this.sensorData.PULSEIN = {};
 };
 
-Module.prototype.lostController = function() {};
+Module.prototype.lostController = function () {};
 
 module.exports = new Module();
