@@ -65,6 +65,23 @@ Entry.jikko = {
     MP3PLAY2: 32,
     MP3VOL: 33,
     RESET_: 34,
+    LOADINIT: 35,
+    LOADSCALE: 36,
+    LOADVALUE: 37,
+    DUST: 38,
+    JOYINIT: 39,
+    JOYX: 40,
+    JOYY: 41,
+    JOYZ: 42,
+    JOYMOVE: 43,
+    RFIDINIT: 44,
+    RFIDTAP: 45,
+    RFIDVALUE: 46,
+    STEPINIT: 47,
+    STEPSPEED: 48,
+    STEPROTATE: 49,
+    STEPROTATE2: 50,
+    STEPROTATE3: 51,
   },
   toneTable: {
     0: 0,
@@ -94,6 +111,17 @@ Entry.jikko = {
     10: [55, 110, 220, 440, 880, 1760, 3520, 7040],
     11: [58, 117, 233, 466, 932, 1865, 3729, 7459],
     12: [62, 123, 247, 494, 988, 1976, 3951, 7902],
+  },
+  direction: {
+    CENTER: 0,
+    UP: 1,
+    LEFT: 2,
+    RIGHT: 3,
+    DOWN: 4,
+    LEFT_UP: 5,
+    LEFT_DOWN: 6,
+    RIGHT_UP: 7,
+    RIGHT_DOWN: 8,
   },
   highList: ["high", "1", "on"],
   lowList: ["low", "0", "off"],
@@ -158,6 +186,28 @@ Entry.jikko.setLanguage = function () {
         jikko_set_mp3_play2: "mp3 %1 번 파일 %2 초 동안 재생 %3",
         jikko_set_mp3_vol: "mp3 볼륨 %1 으로 설정 (0 ~ 30) %2",
         jikko_get_analog_temp_value: "DHT11 포트 %1의 %2 센서 값",
+
+        jikko_load_init: "HX711 로드셀 시작하기 설정 (DOUT %1, SCK %2) %3",
+        jikko_load_scale: "HX711 로드셀 보정하기 %1 %2",
+        jikko_load_value: "HX711 로드셀 값",
+
+        jikko_get_dust: "미세먼지센서 (LED %1, AO %2) 값",
+
+        jikko_rfid_init: "RFID 시작하기 설정 (SS %1, RST %2) %3",
+        jikko_is_rfid_tapped: "RFID 카드가 인식되었는가?",
+        jikko_get_rfid_value: "RFID 카드 값",
+        jikko_joy_init: "%1 조이스틱 시작하기 설정 (X AO %2, Y AO %3, Z %4) %5",
+        jikko_get_joy_x: "%1 조이스틱 X값",
+        jikko_get_joy_y: "%1 조이스틱 y값",
+        jikko_get_joy_z: "%1 조이스틱 버튼 눌림 상태",
+        jikko_get_joy_move: "%1 조이스틱이 %2 방향으로 움직였을 때",
+
+        jikko_step_init:
+          "%1 스텝모터 시작하기 설정 (IN1 %2, IN2 %3, IN3 %4, IN4 %5) %6",
+        jikko_step_speed: "%1 스텝모터 속도를 %2 로 설정하기 (0 ~ 20) %3",
+        jikko_step_rotate: "%1 스텝모터 %2 으로 %3 바퀴 회전하기 %4",
+        jikko_step_rotate2: "%1 스텝모터 %2 으로 %3 도 회전하기 %4",
+        jikko_step_rotate3: "%1 스텝모터 %2 으로 %3 초 동안 회전하기 %4",
       },
     },
     en: {
@@ -213,6 +263,29 @@ Entry.jikko.setLanguage = function () {
         jikko_set_mp3_play: "mp3 %1 번 파일 재생 %2",
         jikko_set_mp3_play2: "mp3 %1 번 파일 %2 초 동안 재생 %3",
         jikko_set_mp3_vol: "mp3 볼륨 %1 으로 설정 (0 ~ 30) %2",
+
+        jikko_load_init: "HX711 로드셀 시작하기 설정 (DOUT %1, SCK %2) %3",
+        jikko_load_scale: "HX711 로드셀 보정하기 %1 %2",
+        jikko_load_value: "HX711 로드셀 값",
+
+        jikko_get_dust: "미세먼지센서(LED %1, AO %2) 값(μg/m³)",
+
+        jikko_rfid_init: "RFID 시작하기 설정 (RST %1, SS %2) %3",
+        jikko_is_rfid_tapped: "RFID 카드가 인식되었는가?",
+        jikko_get_rfid_value: "RFID 카드 값",
+
+        jikko_joy_init: "%1 조이스틱 시작하기 설정 (X AO %2, Y AO %3, Z %4) %5",
+        jikko_get_joy_x: "%1 조이스틱 X값",
+        jikko_get_joy_y: "%1 조이스틱 y값",
+        jikko_get_joy_z: "%1 조이스틱 버튼 눌림 상태",
+        jikko_get_joy_move: "%1 조이스틱이 %2 방향으로 움직였을 때",
+
+        jikko_step_init:
+          "%1 스텝모터 시작하기 설정 (IN1 %2, IN2 %3, IN3 %4, IN4 %5) %6",
+        jikko_step_speed: "%1 스텝모터 속도를 %2 로 설정하기 (0 ~ 20) %3",
+        jikko_step_rotate: "%1 스텝모터 %2 으로 %3 바퀴 회전하기 %4",
+        jikko_step_rotate2: "%1 스텝모터 %2 으로 %3 도 회전하기 %4",
+        jikko_step_rotate3: "%1 스텝모터 %2 으로 %3 초 동안 회전하기 %4",
       },
     },
   };
@@ -229,7 +302,7 @@ Entry.jikko.blockMenuBlocks = [
   "jikko_set_digital_pwm",
 
   "jikko_get_digital_ultrasonic",
-
+  "jikko_get_dust",
   "jikko_get_digital_toggle",
   "jikko_get_digital_pir",
   "jikko_get_light_value",
@@ -264,12 +337,38 @@ Entry.jikko.blockMenuBlocks = [
   "jikko_set_mp3_vol",
   "jikko_set_mp3_play",
   "jikko_set_mp3_play2",
+  "jikko_load_init",
+  "jikko_load_scale",
+  "jikko_load_value",
+  "jikko_rfid_init",
+  "jikko_is_rfid_tapped",
+  "jikko_get_rfid_value",
+  "jikko_joy_init",
+  "jikko_get_joy_x",
+  "jikko_get_joy_y",
+  "jikko_get_joy_z",
+  "jikko_get_joy_move",
+  "jikko_step_init",
+  "jikko_step_speed",
+  "jikko_step_rotate",
+  "jikko_step_rotate2",
+  "jikko_step_rotate3",
 ];
 Entry.jikko.getBlocks = function () {
   var tx;
   var din;
-  var clk;
-  var cs;
+  // var clk;
+  // var cs;
+  var dout;
+  var sck;
+  var joyx, joyy, joyz;
+  var joyx2, joyy2, joyz2;
+  var portpin1, portpin2, portpin3;
+  var ss;
+  var speed1 = 14;
+  var speed2 = 14;
+  var speed3 = 14;
+  var num = 0;
 
   return {
     jikko_list_analog_basic: {
@@ -1038,8 +1137,8 @@ Entry.jikko.getBlocks = function () {
         var port3 = script.getNumberValue("PORT3", script);
 
         din = port1;
-        clk = port2;
-        cs = port3;
+        // clk = port2;
+        // cs = port3;
 
         if (!script.isStart) {
           if (!Entry.hw.sendQueue["SET"]) {
@@ -1099,7 +1198,7 @@ Entry.jikko.getBlocks = function () {
       def: {
         params: [
           {
-            type: "arduino_get_port_number",
+            type: "number",
             params: ["8"],
           },
           null,
@@ -1355,9 +1454,6 @@ Entry.jikko.getBlocks = function () {
           script.timeFlag = 1;
           var fps = Entry.FPS || 60;
           var timeValue = (60 / fps) * 50;
-
-          console.log("JS LIST NUM: ");
-          console.log(value);
 
           Entry.hw.sendQueue["SET"][din] = {
             type: Entry.jikko.sensorTypes.DOTMATRIXEMOJI,
@@ -1802,8 +1898,17 @@ Entry.jikko.getBlocks = function () {
         var port = script.getNumberValue("PORT", script);
         var DIGITAL = Entry.hw.portData.DIGITAL;
 
-        var value = DIGITAL ? DIGITAL[port] || 0 : 0;
+        if (!Entry.hw.sendQueue["GET"]) {
+          Entry.hw.sendQueue["GET"] = {};
+        }
 
+        Entry.hw.sendQueue["GET"][Entry.jikko.sensorTypes.DIGITAL] = {
+          port: port,
+          data: 2,
+          time: new Date().getTime(),
+        };
+
+        var value = DIGITAL ? DIGITAL[port] || 0 : 0;
         return !value;
       },
       syntax: { js: [], py: [] },
@@ -2066,7 +2171,6 @@ Entry.jikko.getBlocks = function () {
         num = num * ((value5_1 - value4_1) / (value3 - value2));
 
         if (flag == 1) {
-          console.log("FLAG1");
           num = value4 - num;
           num = Math.min(value4, num);
           num = Math.max(value5, num);
@@ -2104,11 +2208,11 @@ Entry.jikko.getBlocks = function () {
       def: {
         params: [
           {
-            type: "text",
+            type: "jikko_list_digital_basic",
             params: ["13"],
           },
           {
-            type: "text",
+            type: "jikko_list_digital_basic",
             params: ["12"],
           },
         ],
@@ -2129,6 +2233,9 @@ Entry.jikko.getBlocks = function () {
         }
         delete Entry.hw.sendQueue["SET"][port1];
         delete Entry.hw.sendQueue["SET"][port2];
+
+        Entry.Utils.sleep(700);
+
         if (!Entry.hw.sendQueue["GET"]) {
           Entry.hw.sendQueue["GET"] = {};
         }
@@ -2137,7 +2244,67 @@ Entry.jikko.getBlocks = function () {
           time: new Date().getTime(),
         };
 
-        return Entry.hw.portData.ULTRASONIC || 0;
+        return Entry.hw.portData.ULTRASONIC[port2] || 0;
+      },
+      syntax: {
+        js: [],
+        py: ["jikko.get_digital_ultrasonic(%1, %2)"],
+      },
+    },
+    jikko_get_dust: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_string_field",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+        },
+        {
+          type: "Block",
+          accept: "string",
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_digital_basic",
+            params: ["7"],
+          },
+          {
+            type: "jikko_list_analog_basic",
+            params: ["0"],
+          },
+        ],
+        type: "jikko_get_dust",
+      },
+      paramsKeyMap: {
+        PORT1: 0,
+        PORT2: 1,
+      },
+      class: "jikkoGet",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var port1 = script.getNumberValue("PORT1");
+        var port2 = script.getNumberValue("PORT2");
+
+        if (!Entry.hw.sendQueue["SET"]) {
+          Entry.hw.sendQueue["SET"] = {};
+        }
+        delete Entry.hw.sendQueue["SET"][port1];
+        delete Entry.hw.sendQueue["SET"][port2];
+        if (!Entry.hw.sendQueue["GET"]) {
+          Entry.hw.sendQueue["GET"] = {};
+        }
+        Entry.hw.sendQueue["GET"][Entry.jikko.sensorTypes.DUST] = {
+          port: [port1, port2],
+          time: new Date().getTime(),
+        };
+
+        return Entry.hw.portData.DUST || 0;
       },
       syntax: {
         js: [],
@@ -2966,7 +3133,7 @@ Entry.jikko.getBlocks = function () {
           script.isStart = true;
           script.timeFlag = 1;
           var fps = Entry.FPS || 60;
-          var timeValue = (60 / fps) * 50;
+          var timeValue = (60 / fps) * 100;
 
           Entry.hw.sendQueue["SET"][1] = {
             type: Entry.jikko.sensorTypes.LCD,
@@ -3360,18 +3527,14 @@ Entry.jikko.getBlocks = function () {
             },
             time: new Date().getTime(),
           };
-          console.log(time_value);
 
           setTimeout(function () {
-            console.log("timeout");
             script.timeFlag = 0;
           }, time_value);
           return script;
         } else if (script.timeFlag == 1) {
-          console.log("2");
           return script;
         } else {
-          console.log("3");
           delete script.timeFlag;
           delete script.isStart;
 
@@ -3468,6 +3631,1419 @@ Entry.jikko.getBlocks = function () {
       },
     },
 
+    jikko_load_init: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "arduino_get_port_number",
+            params: ["6"],
+          },
+          {
+            type: "arduino_get_port_number",
+            params: ["7"],
+          },
+          null,
+        ],
+        type: "jikko_load_init",
+      },
+      paramsKeyMap: {
+        PORT1: 0,
+        PORT2: 1,
+      },
+      class: "load",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var port1 = script.getNumberValue("PORT1", script);
+        var port2 = script.getNumberValue("PORT2", script);
+
+        dout = port1;
+        sck = port2;
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+          var fps = Entry.FPS || 60;
+          var timeValue = (60 / fps) * 50;
+
+          Entry.hw.sendQueue["SET"][sck] = {
+            type: Entry.jikko.sensorTypes.LOADINIT,
+            data: {
+              port1: port1,
+              port2: port2,
+            },
+            time: new Date().getTime(),
+          };
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+
+    jikko_load_scale: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "number",
+            params: ["-20000"],
+          },
+          null,
+        ],
+        type: "jikko_load_scale",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+      },
+      class: "load",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var num = script.getNumberValue("NUM", script);
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+          var fps = Entry.FPS || 60;
+          var timeValue = (60 / fps) * 50;
+
+          Entry.hw.sendQueue["SET"][sck] = {
+            type: Entry.jikko.sensorTypes.LOADSCALE,
+            data: {
+              num: num,
+            },
+            time: new Date().getTime(),
+          };
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+
+    jikko_load_value: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_string_field",
+      statements: [],
+      params: [],
+      events: {},
+      def: {
+        type: "jikko_load_value",
+      },
+      paramsKeyMap: {},
+      class: "load",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        if (!Entry.hw.sendQueue["SET"]) {
+          Entry.hw.sendQueue["SET"] = {};
+        }
+        delete Entry.hw.sendQueue["SET"][sck];
+
+        if (!Entry.hw.sendQueue["GET"]) {
+          Entry.hw.sendQueue["GET"] = {};
+        }
+        Entry.hw.sendQueue["GET"][Entry.jikko.sensorTypes.LOADVALUE] = {
+          port: sck,
+          time: new Date().getTime(),
+        };
+
+        return Entry.hw.portData.LOADVALUE || 0;
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+    jikko_list_joy: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic_string_field",
+      statements: [],
+      template: "%1",
+      params: [
+        {
+          type: "Dropdown",
+          options: [
+            ["첫번째", "1"],
+            ["두번째", "2"],
+          ],
+          value: "1",
+          fontSize: 11,
+          bgColor: EntryStatic.colorSet.block.darken.HARDWARE,
+          arrowColor: EntryStatic.colorSet.arrow.default.HARDWARE,
+        },
+      ],
+      events: {},
+      def: {
+        params: [null],
+      },
+      paramsKeyMap: {
+        NUM: 0,
+      },
+      func: function (sprite, script) {
+        return script.getField("NUM");
+      },
+    },
+    jikko_joy_init: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_joy",
+            params: ["1"],
+          },
+          {
+            type: "jikko_list_analog_basic",
+            params: ["0"],
+          },
+          {
+            type: "jikko_list_analog_basic",
+            params: ["1"],
+          },
+          {
+            type: "arduino_get_port_number",
+            params: ["8"],
+          },
+          null,
+        ],
+        type: "jikko_joy_init",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+        PORT1: 1,
+        PORT2: 2,
+        PORT3: 3,
+      },
+      class: "joy",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var num = script.getNumberValue("NUM", script);
+        var port1 = script.getNumberValue("PORT1", script);
+        var port2 = script.getNumberValue("PORT2", script);
+        var port3 = script.getNumberValue("PORT3", script);
+
+        if (num == 1) {
+          joyx = port1;
+          joyy = port2;
+          joyz = port3;
+        } else if (num == 2) {
+          joyx2 = port1;
+          joyy2 = port2;
+          joyz2 = port3;
+        }
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+          var fps = Entry.FPS || 60;
+          var timeValue = (60 / fps) * 50;
+
+          if (num == 1) {
+            Entry.hw.sendQueue["SET"][joyx] = {
+              type: Entry.jikko.sensorTypes.JOYINIT,
+              data: {
+                num: num,
+                port1: port1,
+                port2: port2,
+                port3: port3,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            Entry.hw.sendQueue["SET"][joyx2] = {
+              type: Entry.jikko.sensorTypes.JOYINIT,
+              data: {
+                num: num,
+                port1: port1,
+                port2: port2,
+                port3: port3,
+              },
+              time: new Date().getTime(),
+            };
+          }
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+
+    jikko_get_joy_x: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_string_field",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_joy",
+            params: ["1"],
+          },
+        ],
+        type: "jikko_get_joy_x",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+      },
+      class: "joy",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var ANALOG = Entry.hw.portData.ANALOG;
+        var num = script.getNumberValue("NUM", script);
+        if (num == 1) {
+          return ANALOG ? ANALOG[joyx] || 0 : 0;
+        } else if (num == 2) {
+          return ANALOG ? ANALOG[joyx2] || 0 : 0;
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+
+    jikko_get_joy_y: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_string_field",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_joy",
+            params: ["1"],
+          },
+        ],
+        type: "jikko_get_joy_y",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+      },
+      class: "joy",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var ANALOG = Entry.hw.portData.ANALOG;
+        var num = script.getNumberValue("NUM", script);
+        if (num == 1) {
+          return ANALOG ? ANALOG[joyy] || 0 : 0;
+        } else if (num == 2) {
+          return ANALOG ? ANALOG[joyy2] || 0 : 0;
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+
+    jikko_get_joy_z: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_boolean_field",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_joy",
+            params: ["1"],
+          },
+        ],
+        type: "jikko_get_joy_z",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+      },
+      class: "joy",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var DIGITAL = Entry.hw.portData.DIGITAL;
+        var num = script.getNumberValue("NUM", script);
+
+        if (!Entry.hw.sendQueue["GET"]) {
+          Entry.hw.sendQueue["GET"] = {};
+        }
+
+        if (num == 1) {
+          Entry.hw.sendQueue["GET"][Entry.jikko.sensorTypes.DIGITAL] = {
+            port: joyz,
+            data: 2,
+            time: new Date().getTime(),
+          };
+
+          var value = DIGITAL ? DIGITAL[joyz] || 0 : 0;
+          return !value;
+        } else if (num == 2) {
+          Entry.hw.sendQueue["GET"][Entry.jikko.sensorTypes.DIGITAL] = {
+            port: joyz2,
+            data: 2,
+            time: new Date().getTime(),
+          };
+
+          var value = DIGITAL ? DIGITAL[joyz2] || 0 : 0;
+          return !value;
+        }
+      },
+      syntax: { js: [], py: [] },
+    },
+    jikko_list_joy_direction: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic_string_field",
+      statements: [],
+      template: "%1",
+      params: [
+        {
+          type: "Dropdown",
+          options: [
+            ["가운데", "0"],
+            ["위", "1"],
+            ["아래", "4"],
+            ["왼쪽", "2"],
+            ["오른쪽", "3"],
+            ["왼쪽위", "5"],
+            ["왼쪽아래", "6"],
+            ["오른쪽위", "7"],
+            ["오른쪽아래", "8"],
+          ],
+          value: "0",
+          fontSize: 11,
+          bgColor: EntryStatic.colorSet.block.darken.HARDWARE,
+          arrowColor: EntryStatic.colorSet.arrow.default.HARDWARE,
+        },
+      ],
+      events: {},
+      def: {
+        params: [null],
+      },
+      paramsKeyMap: {
+        DIR: 0,
+      },
+      func: function (sprite, script) {
+        return script.getField("DIR");
+      },
+    },
+    jikko_get_joy_move: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_boolean_field",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+        },
+        {
+          type: "Block",
+          accept: "string",
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_joy",
+            params: ["1"],
+          },
+          {
+            type: "jikko_list_joy_direction",
+            params: ["0"],
+          },
+        ],
+        type: "jikko_get_joy_move",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+        DIR: 1,
+      },
+      class: "joy",
+      isNotFor: ["jikko"],
+      func(sprite, script) {
+        var direction = script.getNumberValue("DIR");
+        const ANALOG = Entry.hw.portData.ANALOG;
+        num = script.getNumberValue("NUM", script);
+
+        const getValue = function (w) {
+          return ANALOG[w] <= 100 ? 0 : ANALOG[w] >= 930 ? 2 : 1;
+        };
+
+        var xpin;
+        var ypin;
+        if (num == 1) {
+          xpin = joyx;
+          ypin = joyy;
+        } else if (num == 2) {
+          xpin = joyx2;
+          ypin = joyy2;
+        }
+        if (
+          direction == Entry.jikko.direction.CENTER &&
+          getValue(xpin) == 1 &&
+          getValue(ypin) == 1
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.DOWN &&
+          getValue(xpin) == 1 &&
+          getValue(ypin) == 2
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.LEFT &&
+          getValue(xpin) == 0 &&
+          getValue(ypin) == 1
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.LEFT_DOWN &&
+          getValue(xpin) == 0 &&
+          getValue(ypin) == 2
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.LEFT_UP &&
+          getValue(xpin) == 0 &&
+          getValue(ypin) == 0
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.RIGHT &&
+          getValue(xpin) == 2 &&
+          getValue(ypin) == 1
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.RIGHT_DOWN &&
+          getValue(xpin) == 2 &&
+          getValue(ypin) == 2
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.RIGHT_UP &&
+          getValue(xpin) == 2 &&
+          getValue(ypin) == 0
+        ) {
+          return 1;
+        } else if (
+          direction == Entry.jikko.direction.UP &&
+          getValue(xpin) == 1 &&
+          getValue(ypin) == 0
+        ) {
+          return 1;
+        }
+
+        return 0;
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+    jikko_list_step: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic_string_field",
+      statements: [],
+      template: "%1",
+      params: [
+        {
+          type: "Dropdown",
+          options: [
+            ["첫번째", "1"],
+            ["두번째", "2"],
+            ["세번째", "3"],
+          ],
+          value: "1",
+          fontSize: 11,
+          bgColor: EntryStatic.colorSet.block.darken.HARDWARE,
+          arrowColor: EntryStatic.colorSet.arrow.default.HARDWARE,
+        },
+      ],
+      events: {},
+      def: {
+        params: [null],
+      },
+      paramsKeyMap: {
+        NUM: 0,
+      },
+      func: function (sprite, script) {
+        return script.getField("NUM");
+      },
+    },
+    jikko_step_init: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_step",
+            params: ["1"],
+          },
+          {
+            type: "arduino_get_port_number",
+            params: ["8"],
+          },
+          {
+            type: "arduino_get_port_number",
+            params: ["9"],
+          },
+          {
+            type: "arduino_get_port_number",
+            params: ["10"],
+          },
+          {
+            type: "arduino_get_port_number",
+            params: ["11"],
+          },
+          null,
+        ],
+        type: "jikko_step_init",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+        PORT1: 1,
+        PORT2: 2,
+        PORT3: 3,
+        PORT4: 4,
+      },
+      class: "step",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var num = script.getNumberValue("NUM", script);
+        var port1 = script.getNumberValue("PORT1", script);
+        var port2 = script.getNumberValue("PORT2", script);
+        var port3 = script.getNumberValue("PORT3", script);
+        var port4 = script.getNumberValue("PORT4", script);
+
+        if (num == 1) {
+          portpin1 = port1;
+        } else if (num == 2) {
+          portpin2 = port1;
+        } else if (num == 3) {
+          portpin3 = port1;
+        }
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+          var fps = Entry.FPS || 60;
+          var timeValue = (60 / fps) * 50;
+
+          if (num == 1) {
+            console.log("STEP INIT 1st");
+            console.log(num);
+            console.log(port1);
+            console.log(port2);
+            console.log(port3);
+            console.log(port4);
+
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPINIT,
+              data: {
+                num: num,
+                port1: port1,
+                port2: port2,
+                port3: port3,
+                port4: port4,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            console.log("STEP INIT 2nd");
+            console.log(num);
+            console.log(port1);
+            console.log(port2);
+            console.log(port3);
+            console.log(port4);
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPINIT,
+              data: {
+                num: num,
+                port1: port1,
+                port2: port2,
+                port3: port3,
+                port4: port4,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            console.log("STEP INIT 3rd");
+            console.log(num);
+            console.log(port1);
+            console.log(port2);
+            console.log(port3);
+            console.log(port4);
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPINIT,
+              data: {
+                num: num,
+                port1: port1,
+                port2: port2,
+                port3: port3,
+                port4: port4,
+              },
+              time: new Date().getTime(),
+            };
+          }
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+    jikko_step_speed: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_step",
+            params: ["1"],
+          },
+          {
+            type: "number",
+            params: ["14"],
+          },
+          null,
+        ],
+        type: "jikko_step_speed",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+        SPEED: 1,
+      },
+      class: "step",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var num = script.getNumberValue("NUM", script);
+        var sp = script.getNumberValue("SPEED", script);
+
+        sp = Math.round(sp);
+        sp = Math.min(sp, 20);
+        sp = Math.max(sp, 0);
+
+        if (num == 1) {
+          speed1 = sp;
+        } else if (num == 2) {
+          speed2 = sp;
+        } else if (num == 3) {
+          speed3 = sp;
+        }
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+          var fps = Entry.FPS || 60;
+          var timeValue = (60 / fps) * 50;
+
+          if (num == 1) {
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPSPEED,
+              data: {
+                num: num,
+                speed: speed1,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPSPEED,
+              data: {
+                num: num,
+                speed: speed2,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPSPEED,
+              data: {
+                num: num,
+                speed: speed3,
+              },
+              time: new Date().getTime(),
+            };
+          }
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+    jikko_list_step_direction: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic_string_field",
+      statements: [],
+      template: "%1",
+      params: [
+        {
+          type: "Dropdown",
+          options: [
+            ["정방향", "1"],
+            ["역방향", "2"],
+          ],
+          value: "1",
+          fontSize: 11,
+          bgColor: EntryStatic.colorSet.block.darken.HARDWARE,
+          arrowColor: EntryStatic.colorSet.arrow.default.HARDWARE,
+        },
+      ],
+      events: {},
+      def: {
+        params: [null],
+      },
+      paramsKeyMap: {
+        DIR: 0,
+      },
+      func: function (sprite, script) {
+        return script.getField("DIR");
+      },
+    },
+    jikko_step_rotate: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_step",
+            params: ["1"],
+          },
+          {
+            type: "jikko_list_step_direction",
+            params: ["1"],
+          },
+          {
+            type: "number",
+            params: ["1"],
+          },
+          null,
+        ],
+        type: "jikko_step_rotate",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+        DIR: 1,
+        VALUE: 2,
+      },
+      class: "step",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var dir = script.getNumberValue("DIR", script);
+        num = script.getNumberValue("NUM", script);
+        var val = script.getNumberValue("VALUE", script);
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+          var timeValue;
+
+          if (num == 1) {
+            timeValue = (60 / speed1) * val * 1000 + 32;
+            console.log(timeValue);
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE,
+              data: {
+                num: num,
+                dir: dir,
+                val: val * 2048,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            timeValue = (60 / speed2) * val * 1000 + 32;
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE,
+              data: {
+                num: num,
+                dir: dir,
+                val: val * 2048,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            timeValue = (60 / speed3) * val * 1000 + 32;
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE,
+              data: {
+                num: num,
+                dir: dir,
+                val: val * 2048,
+              },
+              time: new Date().getTime(),
+            };
+          }
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          if (num == 1) {
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          }
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+    jikko_step_rotate2: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_step",
+            params: ["1"],
+          },
+          {
+            type: "jikko_list_step_direction",
+            params: ["1"],
+          },
+          {
+            type: "number",
+            params: ["90"],
+          },
+          null,
+        ],
+        type: "jikko_step_rotate2",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+        DIR: 1,
+        VALUE: 2,
+      },
+      class: "step",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var dir = script.getNumberValue("DIR", script);
+        num = script.getNumberValue("NUM", script);
+        var val = script.getNumberValue("VALUE", script);
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+
+          var timeValue;
+
+          if (num == 1) {
+            timeValue = (60 / (speed1 * 360)) * val * 1000 + 32;
+            console.log(timeValue);
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE2,
+              data: {
+                num: num,
+                dir: dir,
+                val: (val / 360) * 2048,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            timeValue = (60 / (speed2 * 360)) * val * 1000 + 32;
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE2,
+              data: {
+                num: num,
+                dir: dir,
+                val: (val / 360) * 2048,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            timeValue = (60 / (speed3 * 360)) * val * 1000 + 32;
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE2,
+              data: {
+                num: num,
+                dir: dir,
+                val: (val / 360) * 2048,
+              },
+              time: new Date().getTime(),
+            };
+          }
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          if (num == 1) {
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE2,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE2,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE2,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          }
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+    jikko_step_rotate3: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "jikko_list_step",
+            params: ["1"],
+          },
+          {
+            type: "jikko_list_step_direction",
+            params: ["1"],
+          },
+          {
+            type: "number",
+            params: ["5"],
+          },
+          null,
+        ],
+        type: "jikko_step_rotate3",
+      },
+      paramsKeyMap: {
+        NUM: 0,
+        DIR: 1,
+        SEC: 2,
+      },
+      class: "step",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        num = script.getNumberValue("NUM");
+        var dir = script.getNumberValue("DIR");
+        var sec = script.getNumberValue("SEC");
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+
+          if (num == 1) {
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE3,
+              data: {
+                num: num,
+                dir: dir,
+                sec: sec,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE3,
+              data: {
+                num: num,
+                dir: dir,
+                sec: sec,
+              },
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE3,
+              data: {
+                num: num,
+                dir: dir,
+                sec: sec,
+              },
+              time: new Date().getTime(),
+            };
+          }
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, sec * 1000 + 32);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          if (num == 1) {
+            Entry.hw.sendQueue["SET"][portpin1] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE3,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          } else if (num == 2) {
+            Entry.hw.sendQueue["SET"][portpin2] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE3,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          } else if (num == 3) {
+            Entry.hw.sendQueue["SET"][portpin3] = {
+              type: Entry.jikko.sensorTypes.STEPROTATE3,
+              data: 0,
+              time: new Date().getTime(),
+            };
+          }
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
     jikko_module_digital_oled: {
       color: EntryStatic.colorSet.block.default.HARDWARE,
       outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
@@ -3591,6 +5167,157 @@ Entry.jikko.getBlocks = function () {
         }
       },
       syntax: { js: [], py: ["jikko.Module_digital_oled(%1, %2, %3)"] },
+    },
+
+    jikko_rfid_init: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      skeleton: "basic",
+      statements: [],
+      params: [
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Block",
+          accept: "string",
+          defaultType: "number",
+        },
+        {
+          type: "Indicator",
+          img: "block_icon/hardware_icon.svg",
+          size: 12,
+        },
+      ],
+      events: {},
+      def: {
+        params: [
+          {
+            type: "arduino_get_port_number",
+            params: ["10"],
+          },
+          {
+            type: "arduino_get_port_number",
+            params: ["9"],
+          },
+          null,
+        ],
+        type: "jikko_rfid_init",
+      },
+      paramsKeyMap: {
+        PORT1: 0,
+        PORT2: 1,
+      },
+      class: "rfid",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        var port1 = script.getNumberValue("PORT1", script);
+        var port2 = script.getNumberValue("PORT2", script);
+
+        ss = port1;
+
+        if (!script.isStart) {
+          if (!Entry.hw.sendQueue["SET"]) {
+            Entry.hw.sendQueue["SET"] = {};
+          }
+          script.isStart = true;
+          script.timeFlag = 1;
+          var fps = Entry.FPS || 60;
+          var timeValue = (60 / fps) * 50;
+
+          Entry.hw.sendQueue["SET"][ss] = {
+            type: Entry.jikko.sensorTypes.RFIDINIT,
+            data: {
+              port1: port1,
+              port2: port2,
+            },
+            time: new Date().getTime(),
+          };
+
+          setTimeout(function () {
+            script.timeFlag = 0;
+          }, timeValue);
+          return script;
+        } else if (script.timeFlag == 1) {
+          return script;
+        } else {
+          delete script.timeFlag;
+          delete script.isStart;
+          Entry.engine.isContinue = false;
+          return script.callReturn();
+        }
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
+    },
+    jikko_is_rfid_tapped: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_boolean_field",
+      statements: [],
+      params: [],
+      events: {},
+      def: {
+        params: [],
+        type: "jikko_is_rfid_tapped",
+      },
+      paramsKeyMap: {},
+      class: "rfid",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        if (!Entry.hw.sendQueue["GET"]) {
+          Entry.hw.sendQueue["GET"] = {};
+        }
+
+        Entry.hw.sendQueue["GET"][Entry.jikko.sensorTypes.RFIDTAP] = {
+          port: ss,
+          time: new Date().getTime(),
+        };
+
+        var value = Entry.hw.portData.RFIDTAP || 0;
+        return value;
+      },
+      syntax: { js: [], py: [] },
+    },
+    jikko_get_rfid_value: {
+      color: EntryStatic.colorSet.block.default.HARDWARE,
+      outerLine: EntryStatic.colorSet.block.darken.HARDWARE,
+      fontColor: "#fff",
+      skeleton: "basic_string_field",
+      statements: [],
+      params: [],
+      events: {},
+      def: {
+        type: "jikko_get_rfid_value",
+      },
+      paramsKeyMap: {},
+      class: "rfid",
+      isNotFor: ["jikko"],
+      func: function (sprite, script) {
+        if (!Entry.hw.sendQueue["SET"]) {
+          Entry.hw.sendQueue["SET"] = {};
+        }
+        delete Entry.hw.sendQueue["SET"][ss];
+
+        if (!Entry.hw.sendQueue["GET"]) {
+          Entry.hw.sendQueue["GET"] = {};
+        }
+        Entry.hw.sendQueue["GET"][Entry.jikko.sensorTypes.RFIDVALUE] = {
+          port: ss,
+          time: new Date().getTime(),
+        };
+
+        return Entry.hw.portData.RFIDVALUE || 0;
+      },
+      syntax: {
+        js: [],
+        py: [{}],
+      },
     },
     jikko_module_digital_bluetooth: {
       color: EntryStatic.colorSet.block.default.HARDWARE,
