@@ -79,7 +79,6 @@
 #define STEPROTATE2 50
 #define STEPROTATE3 51
 
-
 // State Constant
 #define GET 1
 #define SET 2
@@ -107,7 +106,7 @@ int digitals[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int servo_pins[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 // 초음파 센서 포트
-float lastUltrasonic = 0;
+float lastUltrasonic[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int trigPin = 13;
 int echoPin = 12;
 
@@ -1234,7 +1233,8 @@ void setUltrasonicMode(boolean mode)
     isUltrasonic = mode;
     if (!mode)
     {
-        lastUltrasonic = 0;
+        //   for(int i=0;i<14;i++)
+        //      lastUltrasonic[i] = 0;
     }
 }
 
@@ -1379,11 +1379,11 @@ void sendUltrasonic()
 
     if (value == 0)
     {
-        value = lastUltrasonic;
+        value = lastUltrasonic[trigPin];
     }
     else
     {
-        lastUltrasonic = value;
+        lastUltrasonic[trigPin] = value;
     }
 
     writeHead(); //읽어온 값 시리얼 전송 시작

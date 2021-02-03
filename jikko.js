@@ -48,7 +48,6 @@ function Module() {
     STEPROTATE: 49,
     STEPROTATE2: 50,
     STEPROTATE3: 51,
-
   };
 
   this.actionTypes = {
@@ -67,12 +66,28 @@ function Module() {
   this.digitalPortTimeList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   this.sensorData = {
-    ULTRASONIC: 0,
+    ULTRASONIC: {
+      0: 0,
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0,
+      7: 0,
+      8: 0,
+      9: 0,
+      10: 0,
+      11: 0,
+      12: 0,
+      13: 0,
+    },
     DHTTEMP: 0,
     DHTHUMI: 0,
     LOADVALUE: 0,
     RFIDTAP: 0,
     RFIDVALUE: 0,
+    DUST: 0,
     JOYX: 0,
     JOYY: 0,
     JOYZ: 0,
@@ -353,7 +368,13 @@ Module.prototype.handleLocalData = function (data) {
         break;
       }
       case self.sensorTypes.ULTRASONIC: {
-        self.sensorData.ULTRASONIC = value;
+        self.sensorData.ULTRASONIC[port] = value;
+        //      console.log(port);
+        //      console.log(self.sensorData.ULTRASONIC[port]);
+        break;
+      }
+      case self.sensorTypes.DUST: {
+        self.sensorData.DUST = value;
         break;
       }
       case self.sensorTypes.TIMER: {
@@ -432,6 +453,18 @@ Module.prototype.makeSensorReadBuffer = function (device, port, data) {
       10,
     ]);
   } else if (device == this.sensorTypes.ULTRASONIC) {
+    buffer = new Buffer([
+      255,
+      85,
+      6,
+      sensorIdx,
+      this.actionTypes.GET,
+      device,
+      port[0],
+      port[1],
+      10,
+    ]);
+  } else if (device == this.sensorTypes.DUST) {
     buffer = new Buffer([
       255,
       85,
