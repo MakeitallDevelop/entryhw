@@ -139,7 +139,19 @@ int in1 = 8;
 int in2 = 9;
 int in3 = 10;
 int in4 = 11;
-int stepSpeed = 14;
+int in11 = 8;
+int in22 = 9;
+int in33 = 10;
+int in44 = 11;
+int in111 = 8;
+int in222 = 9;
+int in333 = 10;
+int in444 = 11;
+
+int stepSpeed1 = 14;
+int stepSpeed2 = 14;
+int stepSpeed3 = 14;
+
 int stepsPerRevolution = 2048;
 
 //RFID 포트
@@ -164,7 +176,9 @@ LedControl dotMatrix = LedControl(dinPin, clkPin, csPin, 1);
 HX711 scale(dout, sck);
 int calibration_factor = 20000;
 //스텝모터
-Stepper myStepper = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+Stepper myStepper1 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+Stepper myStepper2 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+Stepper myStepper3 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
 
 //RFID
 MFRC522 rfid(SS_PIN, RST_PIN); // Instance of the class
@@ -553,10 +567,11 @@ void runSet(int device)
     break;
     case STEPINIT:
     {
-        in1 = readBuffer(7);
-        in2 = readBuffer(9);
-        in3 = readBuffer(11);
-        in4 = readBuffer(13);
+        int num = readBuffer(7);
+        in1 = readBuffer(9);
+        in2 = readBuffer(11);
+        in3 = readBuffer(13);
+        in4 = readBuffer(15);
 
         setPortWritable(in1);
         setPortWritable(in2);
@@ -564,20 +579,39 @@ void runSet(int device)
         setPortWritable(in4);
 
         //받아온 값으로 포트 재설정
-        myStepper = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+        if(num == 1){
+            myStepper1 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+        }
+        else if(num == 2){
+            myStepper2 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+        }
+        else if(num == 3){
+            myStepper3 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
+        }
     }
     break;
     case STEPSPEED:
     {
-        stepSpeed = readBuffer(7);
+        int num = readBuffer(7);
+        
+        if(num == 1){
+            stepSpeed1 = readBuffer(9);
+        }
+        else if(num == 2){
+            stepSpeed2 = readBuffer(9);
+        }
+        else if(num == 3){
+            stepSpeed3 = readBuffer(9);
+        }
     }
     break;
     case STEPROTATE:
     {
-        int dir = readBuffer(7);
-        float num = readFloat(9);
+        int num = readBuffer(7);
+        int dir = readBuffer(9);
+        float val = readFloat(11);
 
-        if (dir == 0 && num == 0)
+        if (num == 0 && dir == 0 && val == 0)
         {
             digitalWrite(in1, LOW);
             digitalWrite(in2, LOW);
@@ -587,22 +621,45 @@ void runSet(int device)
             break;
         }
 
-        if(dir == 1){
-            myStepper.setSpeed(stepSpeed);
-            myStepper.step(num);
+        if(num == 1){
+            if(dir == 1){
+                myStepper1.setSpeed(stepSpeed1);
+                myStepper1.step(val);
+            }
+            else if(dir == 2){
+                myStepper1.setSpeed(stepSpeed1);
+                myStepper1.step((-1) * val);
+            }
         }
-        else if(dir == 2){
-            myStepper.setSpeed(stepSpeed);
-            myStepper.step((-1) * num);
+        else if(num == 2){
+            if(dir == 1){
+                myStepper2.setSpeed(stepSpeed2);
+                myStepper2.step(val);
+            }
+            else if(dir == 2){
+                myStepper2.setSpeed(stepSpeed2);
+                myStepper2.step((-1) * val);
+            }
+        }
+        else if(num == 3){
+            if(dir == 1){
+                myStepper3.setSpeed(stepSpeed3);
+                myStepper3.step(val);
+            }
+            else if(dir == 2){
+                myStepper3.setSpeed(stepSpeed3);
+                myStepper3.step((-1) * val);
+            }
         }
     }
     break;
     case STEPROTATE2:
     {
-        int dir = readBuffer(7);
-        float num = readFloat(9);
+        int num = readBuffer(7); 
+        int dir = readBuffer(9);
+        float val = readFloat(11);
 
-        if (dir == 0 && num == 0)
+        if (num == 0 && dir == 0 && val == 0)
         {
             digitalWrite(in1, LOW);
             digitalWrite(in2, LOW);
@@ -611,24 +668,46 @@ void runSet(int device)
 
             break;
         }
-
-        if(dir == 1){
-            myStepper.setSpeed(stepSpeed);
-            myStepper.step(num);
+        if(num == 1){
+            if(dir == 1){
+                myStepper1.setSpeed(stepSpeed1);
+                myStepper1.step(val);
+            }
+            else if(dir == 2){
+                myStepper1.setSpeed(stepSpeed1);
+                myStepper1.step((-1) * val);
+            }
         }
-        else if(dir == 2){
-            myStepper.setSpeed(stepSpeed);
-            myStepper.step((-1) * num);
+        else if(num == 2){
+            if(dir == 1){
+                myStepper2.setSpeed(stepSpeed2);
+                myStepper2.step(val);
+            }
+            else if(dir == 2){
+                myStepper2.setSpeed(stepSpeed2);
+                myStepper2.step((-1) * val);
+            }
+        }
+        else if(num == 3){
+            if(dir == 1){
+                myStepper3.setSpeed(stepSpeed3);
+                myStepper3.step(val);
+            }
+            else if(dir == 2){
+                myStepper3.setSpeed(stepSpeed3);
+                myStepper3.step((-1) * val);
+            }
         }
     }
     break;
     case STEPROTATE3:
     {
-        int dir = readBuffer(7);
-        int sec = readBuffer(9);
+        int num = readBuffer(7);
+        int dir = readBuffer(9);
+        int val = readBuffer(11);
         float st = 0;
 
-        if (dir == 0 && sec == 0)
+        if (num == 0 && dir == 0 && val == 0)
         {
             digitalWrite(in1, LOW);
             digitalWrite(in2, LOW);
@@ -637,16 +716,39 @@ void runSet(int device)
 
             break;
         }
-  
-        st = float(float(sec) * float(stepSpeed) / 60) * 2048;
 
-        if(dir == 1){
-            myStepper.setSpeed(stepSpeed);
-            myStepper.step(st);
+        if(num == 1){
+            st = float(float(val) * float(stepSpeed1) / 60) * 2048;
+            if(dir == 1){
+                myStepper1.setSpeed(stepSpeed1);
+                myStepper1.step(st);
+            }
+            else if(dir == 2){
+                myStepper1.setSpeed(stepSpeed1);
+                myStepper1.step((-1) * st);
+            }
         }
-        else if(dir == 2){
-            myStepper.setSpeed(stepSpeed);
-            myStepper.step((-1) * st);
+        else if(num == 2){
+            st = float(float(val) * float(stepSpeed2) / 60) * 2048;
+            if(dir == 1){
+                myStepper2.setSpeed(stepSpeed2);
+                myStepper2.step(st);
+            }
+            else if(dir == 2){
+                myStepper2.setSpeed(stepSpeed2);
+                myStepper2.step((-1) * st);
+            }
+        }
+        else if(num == 3){
+            st = float(float(val) * float(stepSpeed3) / 60) * 2048;
+            if(dir == 1){
+                myStepper3.setSpeed(stepSpeed3);
+                myStepper3.step(st);
+            }
+            else if(dir == 2){
+                myStepper3.setSpeed(stepSpeed3);
+                myStepper3.step((-1) * st);
+            }
         }
     }
     break;
