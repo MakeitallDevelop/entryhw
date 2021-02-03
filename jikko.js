@@ -66,7 +66,22 @@ function Module() {
   this.digitalPortTimeList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   this.sensorData = {
-    ULTRASONIC: 0,
+    ULTRASONIC: {
+      0: 0,
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0,
+      7: 0,
+      8: 0,
+      9: 0,
+      10: 0,
+      11: 0,
+      12: 0,
+      13: 0,
+    },
     DHTTEMP: 0,
     DHTHUMI: 0,
     LOADVALUE: 0,
@@ -353,7 +368,9 @@ Module.prototype.handleLocalData = function (data) {
         break;
       }
       case self.sensorTypes.ULTRASONIC: {
-        self.sensorData.ULTRASONIC = value;
+        self.sensorData.ULTRASONIC[port] = value;
+        //      console.log(port);
+        //      console.log(self.sensorData.ULTRASONIC[port]);
         break;
       }
       case self.sensorTypes.DUST: {
@@ -845,6 +862,8 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, dir, num, dummy]);
+      console.log(buffer);
+
       break;
     }
     case this.sensorTypes.STEPROTATE3: {
@@ -867,6 +886,7 @@ Module.prototype.makeOutputBuffer = function (device, port, data) {
         port,
       ]);
       buffer = Buffer.concat([buffer, dir, sec, dummy]);
+      console.log(buffer);
       break;
     }
     case this.sensorTypes.STEPSTOP: {
