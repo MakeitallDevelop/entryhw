@@ -41,6 +41,8 @@
 #define PULSEIN 6
 #define ULTRASONIC 7
 #define TIMER 8
+#define READ_BLUETOOTH 9
+#define WRITE_BLUETOOTH 10
 #define LCD 11
 #define LCDCLEAR 12
 #define DCMOTOR 14
@@ -183,6 +185,13 @@ Stepper myStepper3 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
 MFRC522 rfid(SS_PIN, RST_PIN); // Instance of the class
 String lastCard = "";
 // Buffer
+
+SoftwareSerial softSerial(2, 3);
+String makeBtString;
+int softSerialRX = 2;
+int softSerialTX = 3;
+unsigned long prev_time_BT = 0;
+
 char buffer[52];
 unsigned char prevc = 0;
 byte index = 0;
@@ -203,15 +212,18 @@ boolean isDHTtemp = false;
 boolean isLoad = false;
 boolean isRFID = false;
 boolean isRFIDtap = false;
+boolean isBluetooth = false;
 
 // End Public Value
 
 void setup()
-{                         //초기화
-    Serial.begin(115200); //시리얼 115200
-    initPorts();          //포트 초기화
-    initNeo();            //네오픽셀 초기화
-    initLCD();            //LCD 초기화
+{                           //초기화
+    Serial.begin(115200);   //시리얼 115200
+    softSerial.begin(9600); //블루투스 9600
+
+    initPorts(); //포트 초기화
+    initNeo();   //네오픽셀 초기화
+    initLCD();   //LCD 초기화
     delay(200);
 }
 
@@ -245,6 +257,14 @@ void loop()
         {
             char serialRead = Serial.read(); //시리얼 읽어옴
             setPinValue(serialRead & 0xff);  //읽어온 값을 버퍼에 저장
+        }
+    }
+    while (softSerial.available())
+    {
+        if (softSerial.available() > 0)
+        {
+            char softSerialRead = softSerial.read();
+            makeBtString += softSerialRead;
         }
     }
     delay(15);
@@ -422,6 +442,40 @@ void parseData()
             setUltrasonicMode(false);
             digitals[port] = 0;
         }
+        else if (device == READ_BLUETOOTH)
+        {
+            softSerial.begin(9600);
+            digitals[softSerialTX] = 1;
+            digitals[softSerialRX] = 1;
+            pinMode(softSerialRX, INPUT);
+            if (!isBluetooth)
+            {
+                setBluetoothMode(true);
+            }
+        }
+        else if (device == WRITE_BLUETOOTH)
+        {
+            softSerial.begin(9600);
+            digitals[softSerialTX] = 1;
+            digitals[softSerialRX] = 1;
+            pinMode(softSerialTX, OUTPUT);
+            if (!isBluetooth)
+            {
+                setBluetoothMode(true);
+            }
+        }
+        else if (device != READ_BLUETOOTH && port == softSerialRX)
+        {
+            softSerial.end();
+            setBluetoothMode(false);
+            digitals[port] = 0;
+        }
+        else if (device != WRITE_BLUETOOTH && port == softSerialTX)
+        {
+            softSerial.end();
+            setBluetoothMode(false);
+            digitals[port] = 0;
+        }
         else
         {
             setUltrasonicMode(false);
@@ -481,6 +535,7 @@ void runSet(int device)
         analogWrite(pin, v);
     }
     break;
+
     case TONE: //피에조 부저
     {
         setPortWritable(pin);
@@ -578,13 +633,16 @@ void runSet(int device)
         setPortWritable(in4);
 
         //받아온 값으로 포트 재설정
-        if(num == 1){
+        if (num == 1)
+        {
             myStepper1 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
         }
-        else if(num == 2){
+        else if (num == 2)
+        {
             myStepper2 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
         }
-        else if(num == 3){
+        else if (num == 3)
+        {
             myStepper3 = Stepper(stepsPerRevolution, in4, in2, in3, in1);
         }
     }
@@ -592,14 +650,17 @@ void runSet(int device)
     case STEPSPEED:
     {
         int num = readBuffer(7);
-        
-        if(num == 1){
+
+        if (num == 1)
+        {
             stepSpeed1 = readBuffer(9);
         }
-        else if(num == 2){
+        else if (num == 2)
+        {
             stepSpeed2 = readBuffer(9);
         }
-        else if(num == 3){
+        else if (num == 3)
+        {
             stepSpeed3 = readBuffer(9);
         }
     }
@@ -620,32 +681,41 @@ void runSet(int device)
             break;
         }
 
-        if(num == 1){
-            if(dir == 1){
+        if (num == 1)
+        {
+            if (dir == 1)
+            {
                 myStepper1.setSpeed(stepSpeed1);
                 myStepper1.step(val);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper1.setSpeed(stepSpeed1);
                 myStepper1.step((-1) * val);
             }
         }
-        else if(num == 2){
-            if(dir == 1){
+        else if (num == 2)
+        {
+            if (dir == 1)
+            {
                 myStepper2.setSpeed(stepSpeed2);
                 myStepper2.step(val);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper2.setSpeed(stepSpeed2);
                 myStepper2.step((-1) * val);
             }
         }
-        else if(num == 3){
-            if(dir == 1){
+        else if (num == 3)
+        {
+            if (dir == 1)
+            {
                 myStepper3.setSpeed(stepSpeed3);
                 myStepper3.step(val);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper3.setSpeed(stepSpeed3);
                 myStepper3.step((-1) * val);
             }
@@ -654,7 +724,7 @@ void runSet(int device)
     break;
     case STEPROTATE2:
     {
-        int num = readBuffer(7); 
+        int num = readBuffer(7);
         int dir = readBuffer(9);
         float val = readFloat(11);
 
@@ -667,32 +737,41 @@ void runSet(int device)
 
             break;
         }
-        if(num == 1){
-            if(dir == 1){
+        if (num == 1)
+        {
+            if (dir == 1)
+            {
                 myStepper1.setSpeed(stepSpeed1);
                 myStepper1.step(val);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper1.setSpeed(stepSpeed1);
                 myStepper1.step((-1) * val);
             }
         }
-        else if(num == 2){
-            if(dir == 1){
+        else if (num == 2)
+        {
+            if (dir == 1)
+            {
                 myStepper2.setSpeed(stepSpeed2);
                 myStepper2.step(val);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper2.setSpeed(stepSpeed2);
                 myStepper2.step((-1) * val);
             }
         }
-        else if(num == 3){
-            if(dir == 1){
+        else if (num == 3)
+        {
+            if (dir == 1)
+            {
                 myStepper3.setSpeed(stepSpeed3);
                 myStepper3.step(val);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper3.setSpeed(stepSpeed3);
                 myStepper3.step((-1) * val);
             }
@@ -716,35 +795,44 @@ void runSet(int device)
             break;
         }
 
-        if(num == 1){
+        if (num == 1)
+        {
             st = float(float(val) * float(stepSpeed1) / 60) * 2048;
-            if(dir == 1){
+            if (dir == 1)
+            {
                 myStepper1.setSpeed(stepSpeed1);
                 myStepper1.step(st);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper1.setSpeed(stepSpeed1);
                 myStepper1.step((-1) * st);
             }
         }
-        else if(num == 2){
+        else if (num == 2)
+        {
             st = float(float(val) * float(stepSpeed2) / 60) * 2048;
-            if(dir == 1){
+            if (dir == 1)
+            {
                 myStepper2.setSpeed(stepSpeed2);
                 myStepper2.step(st);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper2.setSpeed(stepSpeed2);
                 myStepper2.step((-1) * st);
             }
         }
-        else if(num == 3){
+        else if (num == 3)
+        {
             st = float(float(val) * float(stepSpeed3) / 60) * 2048;
-            if(dir == 1){
+            if (dir == 1)
+            {
                 myStepper3.setSpeed(stepSpeed3);
                 myStepper3.step(st);
             }
-            else if(dir == 2){
+            else if (dir == 2)
+            {
                 myStepper3.setSpeed(stepSpeed3);
                 myStepper3.step((-1) * st);
             }
@@ -1081,6 +1169,10 @@ void runSet(int device)
             sv.attach(pin);
             sv.write(v);
         }
+        else if (v == 200)
+        {
+            sv.detach(pin);
+        }
     }
     break;
     case RFIDINIT:
@@ -1159,7 +1251,30 @@ void runModule(int device)
         lcd.print(txt);
     }
     break;
-        break;
+    case WRITE_BLUETOOTH:
+    {
+        // int arrayNum = 7;
+        // for (int i = 0; i < 17; i++)
+        // {
+        //     softSerialTemp[i] = readBuffer(arrayNum);
+        //     arrayNum += 2;
+        // }
+
+        int len = readBuffer(7);
+        String txt = readString(len, 9);
+        char softSerialTemp[len];
+
+        for (int i = 0; i < len; i++)
+            softSerialTemp[i] = txt[i];
+
+        lcd.init();
+        lcd.setCursor(0, 0);
+        lcd.print("WRITE BLUETOOTH");
+        lcd.setCursor(0, 1);
+        lcd.print(softSerialTemp);
+        softSerial.write(softSerialTemp);
+    }
+    break;
     default:
         break;
     }
@@ -1238,6 +1353,28 @@ void setUltrasonicMode(boolean mode)
     }
 }
 
+void setBluetoothMode(boolean mode)
+{
+    isBluetooth = mode;
+    if (!mode)
+    {
+        makeBtString = "";
+    }
+}
+
+void sendBluetooth()
+{
+    lcd.init();
+    lcd.setCursor(0, 0);
+    lcd.print("SendBluetooth");
+    lcd.setCursor(0, 1);
+    lcd.print(makeBtString);
+    writeHead();
+    sendString(makeBtString);
+    writeSerial(softSerialRX);
+    writeSerial(READ_BLUETOOTH);
+    writeEnd();
+}
 void sendDHT()
 {
     myDHT11.read11(dhtPin);
